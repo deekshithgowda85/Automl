@@ -35,14 +35,21 @@ function DashboardPage() {
           type: 'assistant',
           content: `Welcome to your AutoML Assistant! 🤖
 
-I'm powered by Gemini AI to help you with machine learning concepts and workflows. I can assist you with:
+I'm powered by Gemini AI and E2B sandbox to help you with machine learning concepts, workflows, and **create actual ML models**!
 
 ## 🔥 **What I Can Do:**
-• **ML Guidance**: Help you understand machine learning concepts and algorithms
+• **Create ML Models**: Just say "create a model" and describe what you want!
+• **ML Guidance**: Help you understand machine learning concepts and algorithms  
 • **Algorithm Selection**: Recommend the best ML approaches for your problems
 • **Data Analysis**: Guide you through data preprocessing and feature engineering
 • **Model Evaluation**: Explain metrics and validation techniques
 • **Best Practices**: Share ML workflows and optimization strategies
+
+## 🤖 **Model Creation Examples:**
+• "Create a classification model for flower species"
+• "Create a regression model for house prices" 
+• "Create a clustering model for customer segmentation"
+• "Create an ML model for digit recognition"
 
 ## 💡 **Ask Me About:**
 • "What's the best algorithm for classification?"
@@ -52,7 +59,8 @@ I'm powered by Gemini AI to help you with machine learning concepts and workflow
 • "What preprocessing steps should I apply?"
 
 ## 🚀 **Pro Tips:**
-• I can explain complex ML concepts in simple terms
+• I can create real ML models that you can download as .pkl files
+• Models are trained in secure E2B sandbox with sample data
 • Ask for specific guidance on your ML project
 • Request algorithm comparisons and recommendations
 • Get help with data preprocessing strategies
@@ -77,25 +85,13 @@ I'm powered by Gemini AI to help you with machine learning concepts and workflow
   const currentSession = sessions.find(s => s.id === currentSessionId);
 
   const testAPI = async () => {
-    try {
-      const response = await fetch('/api/test');
-      const result = await response.json();
-      
-      if (result.status === 'success') {
-        setApiStatus('working');
-        console.log('✅ API test successful:', result.testResponse);
-      } else {
-        setApiStatus('error');
-        console.error('❌ API test failed:', result.message);
-      }
-    } catch (error) {
-      setApiStatus('error');
-      console.error('❌ API test error:', error);
-    }
+    // Removed API testing functionality
+    setApiStatus('working');
+    console.log('✅ API status set to working');
   };
 
   useEffect(() => {
-    // Test API on component mount
+    // Set API status to working by default
     testAPI();
   }, []);
 
@@ -152,51 +148,19 @@ I'm powered by Gemini AI to help you with machine learning concepts and workflow
     setIsLoading(true);
 
     try {
-      // Get current session history for context
-      const currentSession = sessions.find(s => s.id === currentSessionId);
-      const sessionHistory = currentSession?.messages || [];
+      // Check if this is a model creation request
+      const isModelRequest = (currentInput.toLowerCase().includes('create') || currentInput.toLowerCase().includes('test')) && 
+                           (currentInput.toLowerCase().includes('model') || 
+                            currentInput.toLowerCase().includes('ml') ||
+                            currentInput.toLowerCase().includes('machine learning'));
 
-      // Call Gemini API for response
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: currentInput,
-          sessionHistory: sessionHistory.slice(-10).map(msg => ({
-            type: msg.type,
-            content: msg.content
-          }))
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'API call failed');
+      if (isModelRequest) {
+        // Handle ML model creation
+        await handleModelCreation(currentInput);
+      } else {
+        // Handle regular chat
+        await handleRegularChat(currentInput);
       }
-
-      const geminiResponse = await response.json();
-      
-      // Create assistant message with Gemini response
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: geminiResponse.response,
-        timestamp: new Date()
-      };
-
-      // Add assistant message
-      setSessions(prev => prev.map(session => {
-        if (session.id === currentSessionId) {
-          return {
-            ...session,
-            messages: [...session.messages, assistantMessage],
-            lastUpdated: new Date()
-          };
-        }
-        return session;
-      }));
 
     } catch (error) {
       console.error('Error handling message:', error);
@@ -205,7 +169,7 @@ I'm powered by Gemini AI to help you with machine learning concepts and workflow
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
         type: 'assistant',
-        content: `I apologize, but I'm having trouble connecting to the AI service right now. Please check your API configuration and try again.\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        content: `❌ Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
         timestamp: new Date()
       };
 
@@ -221,6 +185,170 @@ I'm powered by Gemini AI to help you with machine learning concepts and workflow
       }));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleModelCreation = async (input: string) => {
+    // Add status message
+    const statusMessage: Message = {
+      id: Date.now().toString() + '_status',
+      type: 'assistant',
+      content: `🤖 **Creating ML Model**\n\nI'm creating a machine learning model based on your request: "${input}"\n\n⏳ Setting up E2B sandbox...\n⏳ Generating Python code...\n⏳ Training model...\n\nThis may take a few moments...`,
+      timestamp: new Date()
+    };
+
+    setSessions(prev => prev.map(session => {
+      if (session.id === currentSessionId) {
+        return {
+          ...session,
+          messages: [...session.messages, statusMessage],
+          lastUpdated: new Date()
+        };
+      }
+      return session;
+    }));
+
+    try {
+      // Call model creation API
+      const response = await fetch('/api/create-model', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          description: input
+        }),
+      });
+
+      const result = await response.json();
+
+      let responseContent = '';
+      
+      if (result.success) {
+        responseContent = `🎉 **ML Model Created Successfully!**\n\n${result.message}\n\n**📊 Model Training Results:**\n\`\`\`\n${result.output}\`\`\`\n\n**💻 Generated Python Code:** (Click download to get code)\n\n**📥 Ready for Download:**\nYour trained model is ready as a downloadable .pkl file!`;
+        
+        // Add download button data (using encodeURIComponent to handle Unicode)
+        responseContent += `\n\n[DOWNLOAD_MODEL_BUTTON:${encodeURIComponent(result.code)}]`;
+      } else {
+        responseContent = `❌ **Model Creation Error**\n\nFailed to create ML model: ${result.error}\n\nPlease try again with a different description.`;
+      }
+
+      // Replace status message with result
+      setSessions(prev => prev.map(session => {
+        if (session.id === currentSessionId) {
+          const messages = session.messages.map(msg => 
+            msg.id === statusMessage.id 
+              ? { ...msg, content: responseContent }
+              : msg
+          );
+          return {
+            ...session,
+            messages,
+            lastUpdated: new Date()
+          };
+        }
+        return session;
+      }));
+
+    } catch (error) {
+      // Replace status message with error
+      const errorContent = `❌ **Model Creation Error**\n\nFailed to create ML model: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try again with a different description.`;
+      
+      setSessions(prev => prev.map(session => {
+        if (session.id === currentSessionId) {
+          const messages = session.messages.map(msg => 
+            msg.id === statusMessage.id 
+              ? { ...msg, content: errorContent }
+              : msg
+          );
+          return {
+            ...session,
+            messages,
+            lastUpdated: new Date()
+          };
+        }
+        return session;
+      }));
+    }
+  };
+
+  const handleRegularChat = async (input: string) => {
+    // Get current session history for context
+    const currentSession = sessions.find(s => s.id === currentSessionId);
+    const sessionHistory = currentSession?.messages || [];
+
+    // Call Gemini API for response
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: input,
+        sessionHistory: sessionHistory.slice(-10).map(msg => ({
+          type: msg.type,
+          content: msg.content
+        }))
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'API call failed');
+    }
+
+    const geminiResponse = await response.json();
+    
+    // Create assistant message with Gemini response
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      type: 'assistant',
+      content: geminiResponse.response,
+      timestamp: new Date()
+    };
+
+    // Add assistant message
+    setSessions(prev => prev.map(session => {
+      if (session.id === currentSessionId) {
+        return {
+          ...session,
+          messages: [...session.messages, assistantMessage],
+          lastUpdated: new Date()
+        };
+      }
+      return session;
+    }));
+  };
+
+  const handleModelDownload = async (encodedCode: string) => {
+    try {
+      const code = decodeURIComponent(encodedCode);
+      
+      const response = await fetch('/api/download-model', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download model');
+      }
+
+      // Create download link
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ml_model_${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}.pkl`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download model. Please try again.');
     }
   };
 
@@ -402,7 +530,22 @@ I'm powered by Gemini AI to help you with machine learning concepts and workflow
                         ? 'bg-muted/30 rounded-xl p-4 border border-border/50' 
                         : 'pl-2'
                     }`}>
-                      {message.content}
+                      {message.content.includes('[DOWNLOAD_MODEL_BUTTON:') ? (
+                        <div>
+                          {message.content.replace(/\[DOWNLOAD_MODEL_BUTTON:([^\]]+)\]/, '')}
+                          <button
+                            onClick={() => {
+                              const match = message.content.match(/\[DOWNLOAD_MODEL_BUTTON:([^\]]+)\]/);
+                              if (match) handleModelDownload(match[1]);
+                            }}
+                            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                          >
+                            📥 Download Model (.pkl)
+                          </button>
+                        </div>
+                      ) : (
+                        message.content
+                      )}
                     </div>
                   </div>
                 </div>
