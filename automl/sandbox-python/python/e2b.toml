@@ -1,0 +1,16 @@
+# This is a config for E2B sandbox template.
+# You can use template ID (1eicoxg3vimcdfrulonj) or template name (automl-python-build) to create a sandbox:
+
+# Python SDK
+# from e2b import Sandbox, AsyncSandbox
+# sandbox = Sandbox("automl-python-build") # Sync sandbox
+# sandbox = await AsyncSandbox.create("automl-python-build") # Async sandbox
+
+# JS SDK
+# import { Sandbox } from 'e2b'
+# const sandbox = await Sandbox.create('automl-python-build')
+
+team_id = "642b2d05-ac91-453e-a718-cde97eff0d35"
+dockerfile = "e2b.Dockerfile"
+template_name = "automl-python-build"
+template_id = "1eicoxg3vimcdfrulonj"
