@@ -19,12 +19,28 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating ML model for:', description);
 
+    // Check if E2B API key is available
+    const e2bApiKey = process.env.E2B_API_KEY;
+    if (!e2bApiKey) {
+      console.error('E2B API key is missing');
+      return NextResponse.json({
+        success: false,
+        message: 'E2B API key not configured',
+        error: 'E2B_API_KEY environment variable is missing',
+        timestamp: new Date().toISOString()
+      }, { status: 500 });
+    }
+
+    console.log('E2B API key found, length:', e2bApiKey.length);
+
     // Import E2B
     const { Sandbox } = await import('e2b');
     
-    // Create sandbox
+    // Create sandbox with explicit API key
     console.log('Creating E2B sandbox...');
-    sandbox = await Sandbox.create('automl-python-build');
+    sandbox = await Sandbox.create('automl-python-build', {
+      apiKey: e2bApiKey
+    });
     console.log('✅ Sandbox created successfully');
 
     // Generate Python code for ML model based on description

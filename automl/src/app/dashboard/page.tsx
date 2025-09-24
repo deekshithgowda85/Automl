@@ -32,51 +32,17 @@ function DashboardPage() {
   const [currentOutput, setCurrentOutput] = useState('Welcome to AutoML Code Viewer!\nGenerate a model to see code and output here.');
   const [lastModelData, setLastModelData] = useState<{code?: string, output?: string, encodedCode?: string} | null>(null);
   
+  // File upload state
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
       id: '1',
-      title: 'Welcome to AutoML',
+      title: 'AutoML Assistant',
       lastUpdated: new Date(),
-      messages: [
-        {
-          id: '1',
-          type: 'assistant',
-          content: `Welcome to your AutoML Assistant! 🤖
-
-I'm powered by Gemini AI and E2B sandbox to help you with machine learning concepts, workflows, and **create actual ML models**!
-
-## 🔥 **What I Can Do:**
-• **Create ML Models**: Just say "create a model" and describe what you want!
-• **ML Guidance**: Help you understand machine learning concepts and algorithms  
-• **Algorithm Selection**: Recommend the best ML approaches for your problems
-• **Data Analysis**: Guide you through data preprocessing and feature engineering
-• **Model Evaluation**: Explain metrics and validation techniques
-• **Best Practices**: Share ML workflows and optimization strategies
-
-## 🤖 **Model Creation Examples:**
-• "Create a classification model for flower species"
-• "Create a regression model for house prices" 
-• "Create a clustering model for customer segmentation"
-• "Create an ML model for digit recognition"
-
-## 💡 **Ask Me About:**
-• "What's the best algorithm for classification?"
-• "How do I handle missing data in my dataset?"
-• "Explain cross-validation and why it's important"
-• "Help me choose between Random Forest and SVM"
-• "What preprocessing steps should I apply?"
-
-## 🚀 **Pro Tips:**
-• I can create real ML models that you can download as .pkl files
-• Models are trained in secure E2B sandbox with sample data
-• Ask for specific guidance on your ML project
-• Request algorithm comparisons and recommendations
-• Get help with data preprocessing strategies
-
-**Ready to explore machine learning?** Ask me anything about ML concepts, algorithms, or your specific project needs!`,
-          timestamp: new Date(Date.now() - 300000)
-        }
-      ]
+      messages: []
     }
   ]);
 
@@ -125,6 +91,39 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
         createNewSession();
       }
     }
+  };
+
+  // File handling functions
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files) return;
+    
+    const validFiles = Array.from(files).filter(file => {
+      const validTypes = ['.csv', '.json', '.txt', '.xlsx'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      return validTypes.includes(fileExtension) && file.size < 10 * 1024 * 1024; // 10MB limit
+    });
+    
+    setUploadedFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFileUpload(e.dataTransfer.files);
   };
 
   const handleSendMessage = async () => {
@@ -244,18 +243,13 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
           encodedCode: encodeURIComponent(result.code)
         });
         
-        // Auto-show panels when model is created successfully
-        setShowCodeViewer(true);
-        setShowOutputPanel(true);
-        
-        // Add download button data (using encodeURIComponent to handle Unicode)
         responseContent += `\n\n[DOWNLOAD_MODEL_BUTTON:${encodeURIComponent(result.code)}]`;
       } else {
         responseContent = `❌ **Model Creation Error**\n\nFailed to create ML model: ${result.error}\n\nPlease try again with a different description.`;
         
         // Update output panel with error info
         setCurrentOutput(`❌ AutoML Model Creation Failed\n${'='.repeat(50)}\nTask: ${input}\nError: ${result.error}\n${'='.repeat(50)}\n\nPlease try again with a different description.`);
-        setShowOutputPanel(true);
+        // Don't auto-show error panel - let users toggle manually
       }
 
       // Replace status message with result
@@ -385,17 +379,17 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
   };
 
   return (
-    <div className="h-screen bg-background text-foreground flex flex-col">
-      {/* Navigation Header */}
-      <header className="bg-background border-b border-border px-4 py-3 flex items-center justify-between">
+    <div className="h-screen bg-transparent text-foreground flex flex-col">
+      {/* Navigation Header - Completely Transparent */}
+      <header className="bg-transparent border-b border-border/5 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 text-foreground hover:text-foreground/80 transition-colors">
+          <Link href="/" className="flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors">
             <ArrowLeft size={20} />
             <span className="font-medium">Back to Home</span>
           </Link>
-          <div className="w-px h-6 bg-border"></div>
-          <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-            <Brain size={24} className="text-foreground" />
+          <div className="w-px h-6 bg-border/30"></div>
+          <h1 className="text-xl font-semibold text-foreground/80 flex items-center gap-2">
+            <Brain size={24} className="text-foreground/60" />
             AutoML Dashboard
           </h1>
         </div>
@@ -403,13 +397,13 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-muted/50 transition-colors"
+            className="p-2 rounded-lg hover:bg-muted/20 transition-colors"
             aria-label="Toggle sidebar"
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           
-          <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors">
+          <button className="p-2 rounded-lg hover:bg-muted/20 transition-colors">
             <Settings size={20} className="text-muted-foreground hover:text-foreground" />
           </button>
         </div>
@@ -417,13 +411,23 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <div className={`${sidebarOpen ? 'w-80' : 'w-0 md:w-80'} bg-muted/20 border-r border-border flex flex-col transition-all duration-300 overflow-hidden`}>
-          {/* Sidebar Header */}
-          <div className="p-4 border-b border-border">
+        {/* Sidebar - Completely Transparent */}
+        <div className={`${sidebarOpen ? 'w-80' : 'w-0'} bg-transparent border-r border-border/5 flex flex-col transition-all duration-300 overflow-hidden`}>
+          {/* Sidebar Header with Close Button */}
+          <div className="p-4 border-b border-border/5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Conversations</h2>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="p-1.5 hover:bg-muted/20 rounded-lg transition-colors"
+                aria-label="Close sidebar"
+              >
+                <X size={16} />
+              </button>
+            </div>
             <button
               onClick={createNewSession}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors font-medium"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/20 text-foreground hover:bg-primary/30 transition-colors font-medium border border-border/30"
             >
               <Plus size={18} />
               New Conversation
@@ -446,8 +450,8 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
                 onClick={() => setCurrentSessionId(session.id)}
                 className={`group flex items-center justify-between p-3 mb-1 rounded-lg cursor-pointer transition-colors ${
                   currentSessionId === session.id 
-                    ? 'bg-foreground/10 border border-border' 
-                    : 'hover:bg-muted/50'
+                    ? 'bg-primary/10 border border-border/30' 
+                    : 'hover:bg-muted/20'
                 }`}
               >
                 <div className="flex-1 min-w-0">
@@ -489,88 +493,89 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
           </div>
         </div>
 
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
-          {/* Chat Header */}
-          <div className="p-4 border-b border-border bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">
-                  {currentSession?.title || 'AutoML Assistant'}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Your AI-powered machine learning companion
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                {/* Code Viewer Button */}
-                <button
-                  onClick={() => setShowCodeViewer(!showCodeViewer)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                    showCodeViewer 
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                >
-                  <span className="text-xs">📄</span>
-                  Code
-                </button>
-                
-                {/* Output Panel Button */}
-                <button
-                  onClick={() => setShowOutputPanel(!showOutputPanel)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                    showOutputPanel 
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' 
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                >
-                  <span className="text-xs">📊</span>
-                  Output
-                </button>
-                
-                <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
-                  apiStatus === 'working' 
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' 
-                    : apiStatus === 'error' 
-                    ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                    : 'bg-muted text-muted-foreground'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full ${
-                    apiStatus === 'working' 
-                      ? 'bg-green-500' 
-                      : apiStatus === 'error' 
-                      ? 'bg-red-500' 
-                      : 'bg-gray-400'
-                  }`}></div>
-                  {apiStatus === 'working' ? 'Gemini AI Connected' : apiStatus === 'error' ? 'API Error' : 'Connecting...'}
-                </span>
+        {/* Main Chat Area - Complete Transparency */}
+        <div className="flex-1 flex flex-col min-h-0 bg-transparent">
+          {/* Chat Header - Complete Transparency */}
+          <div className="flex-shrink-0 p-4 border-b border-border/5 bg-transparent sticky top-0 z-20">
+            <div className="flex items-center justify-end">
+              {/* Toggle Switch Buttons - Theme Aware */}
+              <div className="flex items-center gap-4">
+                {/* Code Toggle Switch */}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-foreground/70">Code</span>
+                  <button
+                    onClick={() => setShowCodeViewer(!showCodeViewer)}
+                    className={`relative w-12 h-6 rounded-full transition-all duration-300 border ${
+                      showCodeViewer 
+                        ? 'bg-primary border-primary' 
+                        : 'bg-background border-border hover:border-border/60'
+                    }`}
+                  >
+                    <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-300 ${
+                      showCodeViewer 
+                        ? 'left-6 bg-primary-foreground' 
+                        : 'left-0.5 bg-muted-foreground border border-border'
+                    }`}></div>
+                  </button>
+                </div>
+
+                {/* Output Toggle Switch */}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-foreground/70">Output</span>
+                  <button
+                    onClick={() => setShowOutputPanel(!showOutputPanel)}
+                    className={`relative w-12 h-6 rounded-full transition-all duration-300 border ${
+                      showOutputPanel 
+                        ? 'bg-primary border-primary' 
+                        : 'bg-background border-border hover:border-border/60'
+                    }`}
+                  >
+                    <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-300 ${
+                      showOutputPanel 
+                        ? 'left-6 bg-primary-foreground' 
+                        : 'left-0.5 bg-muted-foreground border border-border'
+                    }`}></div>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Code Viewer and Output Panels */}
+          {/* Code Viewer and Output Panels - Ultra Transparent */}
           {(showCodeViewer || showOutputPanel) && (
-            <div className="border-b border-border bg-muted/20">
-              <div className="flex h-80">
+            <div className="flex-shrink-0 border-b border-border/10 bg-transparent">
+              <div className={`flex ${(showCodeViewer && showOutputPanel) ? 'h-80' : 'h-96'}`}>
                 {/* Code Viewer Panel */}
                 {showCodeViewer && (
-                  <div className={`${showOutputPanel ? 'w-1/2 border-r border-border' : 'w-full'} flex flex-col`}>
-                    <div className="flex items-center justify-between p-3 bg-muted/40 border-b border-border">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">📄</span>
-                        <span className="text-sm font-medium">Generated Code</span>
+                  <div className={`${showOutputPanel ? 'w-1/2 border-r border-border/10' : 'w-full'} flex flex-col min-w-0`}>
+                    <div className="flex items-center justify-between px-4 py-3 bg-transparent border-b border-border/5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-destructive/60"></div>
+                          <div className="w-3 h-3 rounded-full bg-primary/60"></div>
+                          <div className="w-3 h-3 rounded-full bg-accent/60"></div>
+                        </div>
+                        <span className="text-sm font-medium text-foreground/70">Generated Code</span>
+                        <span className="text-xs text-muted-foreground bg-transparent px-2 py-1 rounded">Python</span>
                       </div>
-                      <button
-                        onClick={() => setShowCodeViewer(false)}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <X size={14} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigator.clipboard.writeText(currentCode)}
+                          className="px-2 py-1 text-xs bg-transparent hover:bg-muted/20 rounded transition-colors"
+                        >
+                          Copy
+                        </button>
+                        <button
+                          onClick={() => setShowCodeViewer(false)}
+                          className="p-1 hover:bg-muted/20 rounded transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex-1 overflow-auto">
-                      <pre className="p-4 text-xs font-mono text-foreground whitespace-pre-wrap leading-relaxed">
-                        <code>{currentCode}</code>
+                    <div className="flex-1 overflow-auto bg-[#1e1e1e] text-[#d4d4d4] min-h-0">
+                      <pre className="p-4 text-sm font-mono leading-relaxed">
+                        <code className="language-python">{currentCode}</code>
                       </pre>
                     </div>
                   </div>
@@ -578,11 +583,16 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
 
                 {/* Output Panel */}
                 {showOutputPanel && (
-                  <div className={`${showCodeViewer ? 'w-1/2' : 'w-full'} flex flex-col`}>
-                    <div className="flex items-center justify-between p-3 bg-muted/40 border-b border-border">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">📊</span>
-                        <span className="text-sm font-medium">Model Output & Terminal</span>
+                  <div className={`${showCodeViewer ? 'w-1/2' : 'w-full'} flex flex-col min-w-0`}>
+                    <div className="flex items-center justify-between px-4 py-3 bg-transparent border-b border-border/5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-destructive/60"></div>
+                          <div className="w-3 h-3 rounded-full bg-primary/60"></div>
+                          <div className="w-3 h-3 rounded-full bg-accent/60"></div>
+                        </div>
+                        <span className="text-sm font-medium text-foreground/70">Terminal Output</span>
+                        <span className="text-xs text-muted-foreground bg-transparent px-2 py-1 rounded">Live</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {lastModelData && (
@@ -592,21 +602,28 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
                                 handleModelDownload(lastModelData.encodedCode);
                               }
                             }}
-                            className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded flex items-center gap-1"
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md font-medium transition-colors flex items-center gap-1.5"
                           >
-                            📥 Download
+                            <span>📥</span>
+                            Download Model
                           </button>
                         )}
                         <button
+                          onClick={() => navigator.clipboard.writeText(currentOutput)}
+                          className="px-2 py-1 text-xs bg-transparent hover:bg-muted/20 rounded transition-colors"
+                        >
+                          Copy
+                        </button>
+                        <button
                           onClick={() => setShowOutputPanel(false)}
-                          className="text-muted-foreground hover:text-foreground"
+                          className="p-1 hover:bg-muted/20 rounded transition-colors"
                         >
                           <X size={14} />
                         </button>
                       </div>
                     </div>
-                    <div className="flex-1 overflow-auto bg-black text-green-400">
-                      <pre className="p-4 text-xs font-mono whitespace-pre-wrap leading-relaxed">
+                    <div className="flex-1 overflow-auto bg-[#0d1117] text-[#58a6ff] min-h-0">
+                      <pre className="p-4 text-sm font-mono leading-relaxed whitespace-pre-wrap">
                         {currentOutput}
                       </pre>
                     </div>
@@ -616,15 +633,47 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
             </div>
           )}
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-8">
-            {currentSession?.messages.map((message) => (
+          {/* Messages - Completely Transparent Container */}
+          <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8 min-h-0 bg-transparent">
+            {currentSession?.messages.length === 0 ? (
+              /* Empty State */
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-6 py-12">
+                <div className="w-20 h-20 rounded-full bg-primary/80 flex items-center justify-center">
+                  <Bot size={32} className="text-primary-foreground" />
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-bold text-foreground">AutoML Assistant</h3>
+                  <p className="text-muted-foreground text-lg max-w-md">
+                    Create ML models and get AI-powered machine learning guidance.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
+                  <div className="bg-blue-500/5 dark:bg-blue-400/5 rounded-xl p-4 border border-blue-200/20 dark:border-blue-800/10 hover:bg-blue-500/10 dark:hover:bg-blue-400/10 transition-all duration-300">
+                    <div className="font-medium text-sm mb-2 text-blue-700 dark:text-blue-300">🤖 Create ML Models</div>
+                    <div className="text-xs text-blue-600/80 dark:text-blue-400/70">&ldquo;Create a classification model for iris flowers&rdquo;</div>
+                  </div>
+                  <div className="bg-emerald-500/5 dark:bg-emerald-400/5 rounded-xl p-4 border border-emerald-200/20 dark:border-emerald-800/10 hover:bg-emerald-500/10 dark:hover:bg-emerald-400/10 transition-all duration-300">
+                    <div className="font-medium text-sm mb-2 text-emerald-700 dark:text-emerald-300">💡 ML Guidance</div>
+                    <div className="text-xs text-emerald-600/80 dark:text-emerald-400/70">&ldquo;What&apos;s the best algorithm for my dataset?&rdquo;</div>
+                  </div>
+                  <div className="bg-purple-500/5 dark:bg-purple-400/5 rounded-xl p-4 border border-purple-200/20 dark:border-purple-800/10 hover:bg-purple-500/10 dark:hover:bg-purple-400/10 transition-all duration-300">
+                    <div className="font-medium text-sm mb-2 text-purple-700 dark:text-purple-300">📊 Data Analysis</div>
+                    <div className="text-xs text-purple-600/80 dark:text-purple-400/70">&ldquo;Help me preprocess my data&rdquo;</div>
+                  </div>
+                  <div className="bg-orange-500/5 dark:bg-orange-400/5 rounded-xl p-4 border border-orange-200/20 dark:border-orange-800/10 hover:bg-orange-500/10 dark:hover:bg-orange-400/10 transition-all duration-300">
+                    <div className="font-medium text-sm mb-2 text-orange-700 dark:text-orange-300">🔍 Algorithm Help</div>
+                    <div className="text-xs text-orange-600/80 dark:text-orange-400/70">&ldquo;Explain Random Forest vs SVM&rdquo;</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              currentSession?.messages.map((message) => (
               <div key={message.id} className="flex gap-4 animate-fadeIn">
                 <div className="flex-shrink-0">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm ${
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
                     message.type === 'user' 
-                      ? 'bg-foreground text-background' 
-                      : 'bg-muted text-foreground border border-border'
+                      ? 'bg-blue-500/80 text-white' 
+                      : 'bg-emerald-500/80 text-white'
                   }`}>
                     {message.type === 'user' ? (
                       <User size={18} />
@@ -638,15 +687,19 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
                     <span className="text-sm font-semibold text-foreground">
                       {message.type === 'user' ? 'You' : 'AutoML Assistant'}
                     </span>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      message.type === 'user'
+                        ? 'text-blue-600 bg-blue-100/80 dark:text-blue-400 dark:bg-blue-900/30'
+                        : 'text-emerald-600 bg-emerald-100/80 dark:text-emerald-400 dark:bg-emerald-900/30'
+                    }`}>
                       {message.timestamp.toLocaleTimeString()}
                     </span>
                   </div>
                   <div className="prose prose-sm max-w-none">
                     <div className={`text-foreground whitespace-pre-wrap leading-relaxed ${
                       message.type === 'assistant' 
-                        ? 'bg-muted/30 rounded-xl p-4 border border-border/50' 
-                        : 'pl-2'
+                        ? 'bg-emerald-500/5 dark:bg-emerald-400/5 rounded-xl p-4 border border-emerald-200/20 dark:border-emerald-800/10' 
+                        : 'bg-blue-500/5 dark:bg-blue-400/5 rounded-lg p-3 border border-blue-200/20 dark:border-blue-800/10'
                     }`}>
                       {message.content.includes('[DOWNLOAD_MODEL_BUTTON:') ? (
                         <div>
@@ -668,12 +721,13 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
             
             {isLoading && (
               <div className="flex gap-4 animate-fadeIn">
                 <div className="flex-shrink-0">
-                  <div className="w-9 h-9 rounded-full bg-muted text-foreground flex items-center justify-center border border-border shadow-sm">
+                  <div className="w-9 h-9 rounded-full bg-muted text-foreground flex items-center justify-center border border-border">
                     <Bot size={18} />
                   </div>
                 </div>
@@ -699,52 +753,174 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
-          <div className="p-4 border-t border-border bg-background/95 backdrop-blur-sm">
+          {/* Human-Coded Natural Input Area - Transparent */}
+          <div className="flex-shrink-0 p-4">
             <div className="max-w-4xl mx-auto">
-              <div className="relative flex items-end gap-3">
-                <div className="flex-1 relative">
-                  <textarea
-                    ref={textareaRef}
-                    value={inputValue}
-                    onChange={(e) => {
-                      setInputValue(e.target.value);
-                      // Auto-resize textarea
-                      if (textareaRef.current) {
-                        textareaRef.current.style.height = 'auto';
-                        textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
+              {/* File Upload Area */}
+              {uploadedFiles.length > 0 && (
+                <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-border/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-primary">📁 Uploaded Files</span>
+                    <button 
+                      onClick={() => setUploadedFiles([])}
+                      className="text-xs text-primary hover:text-primary/80"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {uploadedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center gap-2 bg-transparent px-3 py-1 rounded border border-border/20 text-sm">
+                        <span>{file.name}</span>
+                        <button 
+                          onClick={() => removeFile(index)}
+                          className="text-destructive hover:text-destructive/80"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Main Chat Input - Completely Transparent */}
+              <div 
+                className={`relative bg-transparent border border-border/20 rounded-xl transition-all duration-200 hover:border-border/40 ${
+                  isDragging ? 'border-primary bg-transparent' : ''
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                {/* Input Container */}
+                <div className="flex items-end gap-3 p-4">
+                  {/* Textarea */}
+                  <div className="flex-1 min-w-0">
+                    <textarea
+                      ref={textareaRef}
+                      value={inputValue}
+                      onChange={(e) => {
+                        setInputValue(e.target.value);
+                        if (textareaRef.current) {
+                          textareaRef.current.style.height = 'auto';
+                          textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
+                        }
+                      }}
+                      onKeyPress={handleKeyPress}
+                      placeholder={uploadedFiles.length > 0 
+                        ? "Ask me about your uploaded data, or create ML models..." 
+                        : "Ask automl a question..."
                       }
-                    }}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask me anything about machine learning..."
-                    className="w-full bg-background border-2 border-border rounded-2xl px-4 py-3 pr-12 text-foreground placeholder-muted-foreground resize-none focus:outline-none focus:ring-0 focus:border-foreground/60 transition-all duration-200 shadow-sm hover:shadow-md"
-                    rows={1}
-                    style={{
-                      minHeight: '52px',
-                      maxHeight: '120px'
-                    }}
-                  />
-                  {inputValue.trim() && (
-                    <div className="absolute top-2 right-2 text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                      {inputValue.trim().length} chars
+                      className="w-full bg-transparent text-foreground placeholder-muted-foreground resize-none focus:outline-none text-base leading-6 py-1"
+                      rows={1}
+                      style={{
+                        minHeight: '24px',
+                        maxHeight: '120px'
+                      }}
+                    />
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2">
+                    {/* Project Button with theme colors */}
+                    <button 
+                      className="px-3 py-1.5 text-sm text-foreground/80 bg-transparent hover:bg-muted/20 rounded-lg transition-colors border border-border/30"
+                    >
+                      + Project
+                    </button>
+                    
+                    {/* Upload/Expand Button */}
+                    <button 
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-lg transition-colors"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="7,13 12,18 17,13"/>
+                        <polyline points="7,6 12,11 17,6"/>
+                      </svg>
+                    </button>
+                    
+                    {/* File Upload Button */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept=".csv,.json,.txt,.xlsx"
+                      onChange={(e) => handleFileUpload(e.target.files)}
+                      className="hidden"
+                    />
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-lg transition-colors"
+                      title="Upload CSV, JSON, TXT, or Excel files"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                      </svg>
+                    </button>
+                    
+                    {/* Send Button */}
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!inputValue.trim() || isLoading}
+                      className={`p-2 rounded-lg transition-all duration-200 ${
+                        inputValue.trim() && !isLoading
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-transparent text-muted-foreground hover:bg-muted/20'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Send size={18} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Bottom Status Bar - Complete Transparency */}
+                <div className="flex items-center justify-between px-4 py-2 bg-transparent border-t border-border/5 rounded-b-xl text-xs text-muted-foreground">
+                  {/* Left: AI Status */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        apiStatus === 'working' ? 'bg-green-500 animate-pulse' : 
+                        apiStatus === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+                      }`}></div>
+                      <span className="font-medium">
+                        {apiStatus === 'working' ? 'Gemini AI' : 
+                         apiStatus === 'error' ? 'AI Offline' : 'Connecting...'}
+                      </span>
                     </div>
-                  )}
+                    
+                    {uploadedFiles.length > 0 && (
+                      <span className="text-blue-600">• {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''} ready</span>
+                    )}
+                  </div>
+                  
+                  {/* Right: Instructions */}
+                  <div className="flex items-center gap-4">
+                    <span>Press ⏎ to send</span>
+                    {inputValue.trim() && (
+                      <span className="text-blue-600">{inputValue.trim().length} chars</span>
+                    )}
+                  </div>
                 </div>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isLoading}
-                  className="flex-shrink-0 p-3 rounded-2xl bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-105 disabled:hover:scale-100"
-                >
-                  <Send size={18} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-                <span>Press Enter to send, Shift + Enter for new line</span>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 bg-muted rounded text-xs">
-                    ⚡ Powered by Gemini AI
-                  </span>
-                </div>
+
+                {/* Drag & Drop Overlay - Transparent */}
+                {isDragging && (
+                  <div className="absolute inset-0 bg-blue-500/10 border-2 border-dashed border-blue-400/60 rounded-xl flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">📁</div>
+                      <div className="text-sm font-medium text-blue-600">Drop your files here</div>
+                      <div className="text-xs text-muted-foreground/70">CSV, JSON, TXT, Excel supported</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

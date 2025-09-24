@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        String   @id @default(cuid())
+    email     String   @unique
+    name      String?
+    avatar    String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    datasets      Dataset[]
+    mlModels      MLModel[]
+    conversations Conversation[]
+
+    @@map("users")
+}
+
+model Dataset {
+    id          String   @id @default(cuid())
+    name        String
+    description String?
+    fileName    String
+    filePath    String
+    fileSize    Int
+    fileType    String // csv, json, xlsx, txt
+    columns     Json? // Store column information as JSON
+    rowCount    Int?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    // Relations
+    userId   String
+    user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    mlModels MLModel[]
+
+    @@map("datasets")
+}
+
+model MLModel {
+    id          String  @id @default(cuid())
+    name        String
+    description String?
+    algorithm   String // e.g., "RandomForest", "SVM", "LogisticRegression"
+    modelType   String // e.g., "classification", "regression", "clustering"
+    accuracy    Float? // Model performance metrics
+    precision   Float?
+    recall      Float?
+    f1Score     Float?
+    hyperParams Json? // Store hyperparameters as JSON
+
+    // PKL file storage
+    pklFileName String // Name of the .pkl file
+    pklFilePath String // Path to the .pkl file
+    pklFileSize Int // Size of the .pkl file in bytes
+
+    // Training information
+    trainingTime  Int? // Training time in milliseconds
+    isPublic      Boolean @default(false)
+    downloadCount Int     @default(0)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    datasetId String?
+    dataset   Dataset? @relation(fields: [datasetId], references: [id], onDelete: SetNull)
+
+    @@map("ml_models")
+}
+
+model Conversation {
+    id        String   @id @default(cuid())
+    title     String   @default("New Conversation")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    userId   String
+    user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    messages Message[]
+
+    @@map("conversations")
+}
+
+model Message {
+    id        String      @id @default(cuid())
+    content   String
+    type      MessageType
+    timestamp DateTime    @default(now())
+
+    // Optional fields for AI responses
+    modelUsed String? // e.g., "gemini-pro"
+    tokens    Int? // Token usage for AI responses
+
+    // Relations
+    conversationId String
+    conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+    @@map("messages")
+}
+
+enum MessageType {
+    USER
+    ASSISTANT
+}
