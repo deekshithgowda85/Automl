@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Plus, Settings, User, Bot, Trash2, MessageSquare, Database, Brain, BarChart3, ArrowLeft, Menu, X } from 'lucide-react';
+import { Send, Plus, Settings, User, Bot, Trash2, MessageSquare, Database, Brain, ArrowLeft, Menu, X } from 'lucide-react';
+import { UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 
 interface Message {
@@ -19,6 +20,7 @@ interface ChatSession {
 }
 
 function DashboardPage() {
+  // All hooks must be declared before any conditional returns
   const [currentSessionId, setCurrentSessionId] = useState<string>('1');
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -49,26 +51,28 @@ function DashboardPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-    scrollToBottom();
-  }, [sessions]);
-
+  // Helper variables
   const currentSession = sessions.find(s => s.id === currentSessionId);
 
-  const testAPI = async () => {
-    // Removed API testing functionality
-    setApiStatus('working');
-    console.log('✅ API status set to working');
-  };
-
+  // Effects
   useEffect(() => {
-    // Set API status to working by default
-    testAPI();
-  }, []);
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [currentSession?.messages]);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [inputValue]);
+
+  // Set API status to working by default
+  useEffect(() => {
+    setApiStatus('working');
+  }, []);
   const createNewSession = () => {
     const newSession: ChatSession = {
       id: Date.now().toString(),
@@ -403,9 +407,15 @@ function DashboardPage() {
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           
-          <button className="p-2 rounded-lg hover:bg-muted/20 transition-colors">
-            <Settings size={20} className="text-muted-foreground hover:text-foreground" />
-          </button>
+          {/* Profile Icon */}
+          <UserButton 
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: "w-8 h-8 rounded-full border border-border/20 hover:border-border/40 transition-colors cursor-pointer"
+              }
+            }}
+          />
         </div>
       </header>
 
@@ -480,11 +490,7 @@ function DashboardPage() {
             </Link>
             <Link href="/mlmodels" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
               <Brain size={16} className="text-muted-foreground" />
-              <span className="text-sm text-foreground">Models</span>
-            </Link>
-            <Link href="/profile" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <BarChart3 size={16} className="text-muted-foreground" />
-              <span className="text-sm text-foreground">Analytics</span>
+              <span className="text-sm text-foreground">ML Models</span>
             </Link>
             <button className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors w-full text-left">
               <Settings size={16} className="text-muted-foreground" />

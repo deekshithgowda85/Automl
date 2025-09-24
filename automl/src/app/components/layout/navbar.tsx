@@ -3,13 +3,15 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useAuth, UserButton } from '@clerk/nextjs';
 
 const Navbar = () => {
-  // const [isScrolled, setIsScrolled] = useState(false);
+  const { isSignedIn, isLoaded } = useAuth();  
   const navItems = [
     { name: 'Datasets', path: '/datasets' },
     { name: 'ML Models', path: '/mlmodels' },
     { name: 'Profile', path: '/profile' },
+
   ];
 
   return (
@@ -49,7 +51,7 @@ const Navbar = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               {navItems.map((item, index) => (
-                <Link key={item.name} href={item.path} prefetch>
+                <Link key={item.name} href={item.path} prefetch={true}>
                   <motion.span
                     className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-4 py-2 rounded-full hover:bg-accent"
                     whileHover={{ 
@@ -66,20 +68,23 @@ const Navbar = () => {
             </motion.div>
           </div>
 
-          {/* Right side icons, theme toggle, and button */}
+          {/* Right side icons, theme toggle, and auth buttons */}
           <div className="flex items-center space-x-4">
-            {/* X Icon */}
-            <motion.button
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              whileHover={{ scale: 1.1 }}
+            {/* Social Icons */}
+            <motion.a
+              href="https://github.com/deekshithgowda85/Automl"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-xs bg-muted/30 hover:bg-muted/50 px-2 py-1 rounded-full"
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
               </svg>
-            </motion.button>
+              <span>★ Star</span>
+            </motion.a>
 
-            {/* Mail Icon */}
             <motion.button
               className="text-muted-foreground hover:text-foreground transition-colors"
               whileHover={{ scale: 1.1 }}
@@ -93,19 +98,67 @@ const Navbar = () => {
             {/* Theme Toggle Button */}
             <ThemeToggle />
 
-            {/* Launch The Project Button */}
-            <Link href="/dashboard" prefetch>
-              <motion.span
-                className="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2 rounded-full font-medium text-sm transition-all duration-200 flex items-center justify-center"
-                whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3)' }}
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
-                🚀 Dashboard
-              </motion.span>
-            </Link>
+            {/* Authentication Section */}
+            {isLoaded && (
+              <>
+                {isSignedIn ? (
+                  <div className="flex items-center space-x-3">
+                    {/* Dashboard Button for authenticated users */}
+                    <Link href="/dashboard" prefetch>
+                      <motion.span
+                        className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl relative overflow-hidden group"
+                        whileHover={{ scale: 1.05, y: -1 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+                        <span className="relative flex items-center gap-1">
+                          🚀 Dashboard
+                        </span>
+                      </motion.span>
+                    </Link>
+                    
+                    {/* Profile Menu */}
+                    <div className="relative">
+                      <UserButton 
+                        appearance={{
+                          elements: {
+                            avatarBox: "w-8 h-8"
+                          }
+                        }}
+                        afterSignOutUrl="/"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    {/* Sign In Button */}
+                    <Link href="/sign-in" prefetch>
+                      <motion.span
+                        className="text-foreground hover:text-primary transition-colors text-sm font-medium"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Sign In
+                      </motion.span>
+                    </Link>
+                    
+                    {/* Sign Up Button */}
+                    <Link href="/sign-up" prefetch>
+                      <motion.span
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-full font-medium text-sm transition-all duration-200"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Sign Up
+                      </motion.span>
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
