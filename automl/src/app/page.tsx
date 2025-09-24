@@ -196,19 +196,23 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-muted-foreground overflow-hidden relative">
+  <div className="min-h-screen bg-background text-foreground overflow-hidden relative transition-colors duration-300">
       <Navbar />
       
       {/* Hero Section with 3D Cards */}
       <div
-        className="min-h-screen bg-background text-foreground relative overflow-hidden"
-        style={{ perspective: '1200px', marginTop: '0' }}
+        className="min-h-screen relative overflow-hidden transition-colors duration-300"
+        style={{ 
+          perspective: '1200px', 
+          marginTop: '0',
+          background: 'hsl(var(--background))'
+        }}
       >
-        {/* Background gradient effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-background to-background"></div>
-        <div className="absolute top-20 left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-400/5 rounded-full blur-2xl transform -translate-x-1/2 -translate-y-1/2"></div>
+        {/* Black and white gradient background effects */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 via-gray-50/30 to-white/50 dark:from-gray-900/50 dark:via-gray-800/30 dark:to-black/50"></div>
+        <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-r from-black/10 to-gray-500/10 dark:from-white/10 dark:to-gray-400/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-l from-gray-600/10 to-black/10 dark:from-gray-300/10 dark:to-white/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-gradient-to-tr from-gray-400/20 to-gray-600/20 dark:from-gray-500/15 dark:to-gray-300/15 rounded-full blur-2xl transform -translate-x-1/2 -translate-y-1/2 animate-pulse" style={{animationDelay: '1s'}}></div>
 
         {/* 3D AutoML Cards/Interfaces */}
         <div
@@ -219,35 +223,35 @@ const HomePage = () => {
             transform: 'rotateX(15deg) rotateY(25deg) rotateZ(12deg)'
           }}
         >
-          <div className="w-full h-full bg-background border border-blue-500/30 rounded-xl backdrop-blur-md shadow-xl">
+          <div className="w-full h-full bg-background border border-border rounded-xl backdrop-blur-md shadow-xl">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <span className="text-blue-600 text-sm font-medium">🤖 Model Training</span>
+                <span className="text-foreground text-sm font-medium">🤖 Model Training</span>
                 <span className="text-muted-foreground text-xs">Active</span>
               </div>
               <div className="mb-8">
                 <div className="text-3xl font-bold text-foreground">94.7%</div>
-                <div className="text-blue-600 text-sm">Training Accuracy</div>
+                <div className="text-muted-foreground text-sm">Training Accuracy</div>
               </div>
-              <div className="h-40 bg-muted rounded-lg mb-6 relative overflow-hidden border border-blue-500/20">
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent"></div>
+              <div className="h-40 bg-muted rounded-lg mb-6 relative overflow-hidden border border-border">
+                <div className="absolute inset-0" style={{ background: 'var(--gradient-card)' }}></div>
                 <div className="absolute inset-0 grid grid-cols-8 grid-rows-6 gap-1 p-2">
                   {[...Array(48)].map((_, i) => (
                     <div 
                       key={i} 
-                      className={`bg-blue-500/20 rounded-sm ${Math.random() > 0.8 ? 'animate-pulse bg-blue-500/40' : ''}`}
+                      className={`bg-muted rounded-sm ${Math.random() > 0.8 ? 'animate-pulse bg-foreground/20' : ''}`}
                       style={{animationDelay: `${Math.random() * 2}s`}}
                     ></div>
                   ))}
                 </div>
-                <div className="absolute bottom-2 left-2 text-xs text-blue-600">
+                <div className="absolute bottom-2 left-2 text-xs text-muted-foreground">
                   Neural Network Training
                 </div>
               </div>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Epochs</span>
-                  <span className="text-blue-600 font-medium">847/1000</span>
+                  <span className="text-foreground font-medium">847/1000</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Models Trained</span>
@@ -255,7 +259,7 @@ const HomePage = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Best Score</span>
-                  <span className="text-green-600 font-medium">0.947</span>
+                  <span className="text-foreground font-medium">0.947</span>
                 </div>
               </div>
             </div>
@@ -270,42 +274,42 @@ const HomePage = () => {
             transform: 'rotateX(-15deg) rotateY(-20deg) rotateZ(-8deg)'
           }}
         >
-          <div className="w-full h-full bg-background border border-purple-500/30 rounded-xl backdrop-blur-md shadow-xl">
+          <div className="w-full h-full bg-background border border-border rounded-xl backdrop-blur-md shadow-xl">
             <div className="p-5">
               <div className="flex justify-between items-center mb-6">
-                <span className="text-purple-600 text-sm font-medium">📊 Data Pipeline</span>
-                <span className="text-purple-600 text-xs bg-purple-500/20 px-2 py-1 rounded border border-purple-500/30">LIVE</span>
+                <span className="text-foreground text-sm font-medium">📊 Data Pipeline</span>
+                <span className="text-muted-foreground text-xs bg-background px-2 py-1 rounded border border-border">LIVE</span>
               </div>
               <div className="mb-6">
                 <div className="text-3xl font-bold text-foreground">2.4M</div>
                 <div className="text-muted-foreground text-sm">Records Processed</div>
               </div>
               <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="bg-muted rounded-lg p-3 border border-purple-500/20">
-                  <div className="text-purple-600 text-xl font-bold">12</div>
+                <div className="bg-muted rounded-lg p-3 border border-border">
+                  <div className="text-foreground text-xl font-bold">12</div>
                   <div className="text-muted-foreground text-xs">Features</div>
                 </div>
-                <div className="bg-muted rounded-lg p-3 border border-purple-500/20">
+                <div className="bg-muted rounded-lg p-3 border border-border">
                   <div className="text-foreground text-xl font-bold">8.9GB</div>
                   <div className="text-muted-foreground text-xs">Dataset Size</div>
                 </div>
-                <div className="bg-muted rounded-lg p-3 border border-purple-500/20">
-                  <div className="text-green-600 text-xl font-bold">99.1%</div>
+                <div className="bg-muted rounded-lg p-3 border border-border">
+                  <div className="text-foreground text-xl font-bold">99.1%</div>
                   <div className="text-muted-foreground text-xs">Data Quality</div>
                 </div>
-                <div className="bg-muted rounded-lg p-3 border border-purple-500/20">
-                  <div className="text-blue-600 text-xl font-bold">7</div>
+                <div className="bg-muted rounded-lg p-3 border border-border">
+                  <div className="text-foreground text-xl font-bold">7</div>
                   <div className="text-muted-foreground text-xs">Models</div>
                 </div>
               </div>
               <div className="mb-4">
                 <div className="flex justify-between text-xs mb-2">
                   <span className="text-muted-foreground">Processing</span>
-                  <span className="text-purple-600">84%</span>
+                  <span className="text-foreground">84%</span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-2 border border-purple-500/30">
-                  <div className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full relative" style={{width: '84%'}}>
-                    <div className="absolute right-0 top-0 w-1 h-2 bg-purple-300 rounded-full animate-pulse"></div>
+                <div className="w-full bg-muted rounded-full h-2 border border-border">
+                  <div className="bg-foreground h-2 rounded-full relative" style={{width: '84%'}}>
+                    <div className="absolute right-0 top-0 w-1 h-2 bg-background rounded-full animate-pulse"></div>
                   </div>
                 </div>
               </div>
@@ -391,43 +395,43 @@ const HomePage = () => {
         {/* Floating ML Elements */}
         <div 
           ref={el => { floatingElementsRef.current[0] = el; }}
-          className="absolute top-1/2 left-1/4 w-2 h-2 bg-blue-500 rounded-full opacity-70 animate-pulse"
+          className="absolute top-1/2 left-1/4 w-2 h-2 bg-foreground rounded-full opacity-70 animate-pulse"
         ></div>
         <div 
           ref={el => { floatingElementsRef.current[1] = el; }}
-          className="absolute top-1/3 right-1/4 w-1 h-1 bg-purple-500 rounded-full opacity-80"
+          className="absolute top-1/3 right-1/4 w-1 h-1 bg-muted-foreground rounded-full opacity-80"
         ></div>
         <div 
           ref={el => { floatingElementsRef.current[2] = el; }}
-          className="absolute bottom-1/3 left-1/3 w-1.5 h-1.5 bg-green-500 rounded-full opacity-60 animate-pulse"
+          className="absolute bottom-1/3 left-1/3 w-1.5 h-1.5 bg-foreground rounded-full opacity-60 animate-pulse"
         ></div>
         <div 
           ref={el => { floatingElementsRef.current[3] = el; }}
-          className="absolute top-20 right-1/3 w-1 h-1 bg-orange-500 rounded-full opacity-50"
+          className="absolute top-20 right-1/3 w-1 h-1 bg-muted-foreground rounded-full opacity-50"
         ></div>
         
         {/* Additional decorative ML elements */}
-        <div className="absolute top-16 right-1/3 text-blue-500/20 text-xs transform rotate-45 font-mono select-none">
+        <div className="absolute top-16 right-1/3 text-foreground/20 text-xs transform rotate-45 font-mono select-none">
           AUTOML
         </div>
-        <div className="absolute bottom-32 left-1/4 text-purple-500/20 text-xs transform -rotate-12 font-mono select-none">
+        <div className="absolute bottom-32 left-1/4 text-muted-foreground/30 text-xs transform -rotate-12 font-mono select-none">
           NEURAL
         </div>
-        <div className="absolute top-1/4 right-16 text-green-500/20 text-xs transform rotate-90 font-mono select-none">
+        <div className="absolute top-1/4 right-16 text-foreground/20 text-xs transform rotate-90 font-mono select-none">
           PIPELINE
         </div>
-        <div className="absolute bottom-1/4 left-20 text-orange-500/20 text-xs transform -rotate-45 font-mono select-none">
+        <div className="absolute bottom-1/4 left-20 text-muted-foreground/30 text-xs transform -rotate-45 font-mono select-none">
           OPTIMIZE
         </div>
 
         {/* Main Content (Heading, Subtitle, CTA) */}
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none pt-16">
-          <div className="text-blue-500 text-sm mb-4 tracking-wider opacity-80 pointer-events-auto hero-subtitle">
+          <div className="text-foreground text-sm mb-4 tracking-wider opacity-60 pointer-events-auto hero-subtitle">
             Automated Machine Learning • Enterprise Grade
           </div>
           <h1 className="hero-title text-5xl md:text-7xl font-bold text-center mb-8 leading-tight pointer-events-auto">
             <div className="text-foreground">AutoML Platform</div>
-            <div className="bg-gradient-to-r from-blue-600 to-purple-500 bg-clip-text text-transparent">
+            <div style={{background: 'var(--gradient-main)', WebkitBackgroundClip: 'text', color: 'transparent'}}>
               Build. Train. Deploy.
             </div>
           </h1>
@@ -436,13 +440,13 @@ const HomePage = () => {
           </p>
           <div className="hero-buttons flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-12 pointer-events-auto w-full md:w-auto px-4">
             <button
-              className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
-              onClick={() => navigate('/models')}
+              className="w-full md:w-auto bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+              onClick={() => navigate('/mlmodels')}
             >
               Start Training
             </button>
             <button
-              className="w-full md:w-auto border border-blue-600 hover:bg-blue-600 text-blue-600 hover:text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105"
+              className="w-full md:w-auto border-2 border-black hover:bg-black dark:border-white dark:hover:bg-white text-black hover:text-white dark:text-white dark:hover:text-black px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 backdrop-blur-sm"
               onClick={() => navigate('/dashboard')}
             >
               View Dashboard
@@ -452,35 +456,49 @@ const HomePage = () => {
 
         {/* Animated grid background */}
         <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }}></div>
+          <div 
+            className="absolute inset-0 dark:hidden" 
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '50px 50px'
+            }}
+          ></div>
+          <div 
+            className="absolute inset-0 hidden dark:block" 
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '50px 50px'
+            }}
+          ></div>
         </div>
       </div>
       <Homelanding />
       {/* Community Section - Updated for AutoML */}
-      <div className="min-h-screen bg-background text-muted-foreground relative overflow-hidden">
-        {/* Background decorative elements */}
+      <div className="min-h-screen relative overflow-hidden transition-colors duration-300" style={{background: 'hsl(var(--background))'}}>
+        {/* Enhanced background decorative elements */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 via-white/30 to-gray-100/50 dark:from-gray-950/50 dark:via-black/30 dark:to-gray-900/50"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
           
           {/* Floating decorative elements */}
           <motion.div 
-            className="floating-item absolute top-32 right-20 w-2 h-2 bg-blue-500/60 rounded-full"
+            className="floating-item absolute top-32 right-20 w-2 h-2 bg-foreground/60 rounded-full"
             animate={{ y: [0, -10, 0], opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 3, repeat: Infinity }}
           />
           <motion.div 
-            className="floating-item absolute top-48 right-32 w-1 h-1 bg-purple-500/60 rounded-full"
+            className="floating-item absolute top-48 right-32 w-1 h-1 bg-muted-foreground/60 rounded-full"
             animate={{ y: [0, -8, 0], opacity: [0.3, 0.8, 0.3] }}
             transition={{ duration: 4, repeat: Infinity, delay: 1 }}
           />
           <motion.div 
-            className="floating-item absolute top-40 left-20 w-1.5 h-1.5 bg-green-500/60 rounded-full"
+            className="floating-item absolute top-40 left-20 w-1.5 h-1.5 bg-foreground/60 rounded-full"
             animate={{ y: [0, -12, 0], opacity: [0.4, 0.9, 0.4] }}
             transition={{ duration: 5, repeat: Infinity, delay: 2 }}
           />
@@ -494,10 +512,10 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium">
+            <div className="bg-foreground text-background px-4 py-2 rounded-full text-sm font-medium">
               AI-Powered
             </div>
-            <div className="bg-purple-500 text-white px-4 py-2 rounded-full text-sm font-medium">
+            <div className="bg-muted-foreground text-background px-4 py-2 rounded-full text-sm font-medium">
               AutoML
             </div>
           </motion.div>
@@ -512,7 +530,7 @@ const HomePage = () => {
             <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-foreground">
               Built for developers,
               <br />
-              <span className="bg-gradient-to-r from-blue-600 to-purple-500 bg-clip-text text-transparent">
+              <span className="text-gradient">
                 Loved by data scientists
               </span>
             </h1>
@@ -523,7 +541,7 @@ const HomePage = () => {
             
             {/* Left card - Developers */}
             <motion.div 
-              className="relative w-80 h-96 bg-background border border-blue-500/30 rounded-3xl p-6 overflow-hidden shadow-lg"
+              className="relative w-80 h-96 bg-background border border-border rounded-3xl p-6 overflow-hidden shadow-professional"
               initial={{ opacity: 0, x: -50, rotateY: -15 }}
               animate={{ opacity: 1, x: 0, rotateY: 0 }}
               transition={{ duration: 1, delay: 0.4 }}
@@ -531,22 +549,22 @@ const HomePage = () => {
               style={{ transformStyle: 'preserve-3d' }}
             >
               {/* Card header */}
-              <div className="bg-blue-600/20 backdrop-blur-sm rounded-full px-4 py-2 w-fit mb-6">
-                <span className="text-blue-600 text-sm font-medium">Developers</span>
+              <div className="bg-foreground/10 backdrop-blur-sm rounded-full px-4 py-2 w-fit mb-6">
+                <span className="text-foreground text-sm font-medium">Developers</span>
               </div>
 
               {/* Feature list */}
               <div className="space-y-4 mb-8">
                 <div className="flex items-center gap-3 text-foreground">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-foreground rounded-full"></div>
                   <span className="text-sm">Easy API integration & deployment</span>
                 </div>
                 <div className="flex items-center gap-3 text-foreground">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-foreground rounded-full"></div>
                   <span className="text-sm">Version control for ML models</span>
                 </div>
                 <div className="flex items-center gap-3 text-foreground">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-foreground rounded-full"></div>
                   <span className="text-sm">Automated CI/CD pipelines</span>
                 </div>
               </div>
@@ -554,20 +572,20 @@ const HomePage = () => {
               {/* Bottom decorative elements */}
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-16 h-16 bg-blue-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-2xl">🐍</span>
+                  <div className="w-16 h-16 bg-foreground rounded-lg flex items-center justify-center">
+                    <span className="text-background text-2xl">🐍</span>
                   </div>
                   
-                  <div className="w-16 h-16 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-2xl">🔥</span>
+                  <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                    <span className="text-foreground text-2xl">🔥</span>
                   </div>
 
-                  <div className="w-16 h-16 bg-green-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-2xl">📊</span>
+                  <div className="w-16 h-16 bg-foreground/80 rounded-lg flex items-center justify-center">
+                    <span className="text-background text-2xl">📊</span>
                   </div>
 
-                  <div className="w-16 h-16 bg-purple-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-2xl">🚀</span>
+                  <div className="w-16 h-16 bg-muted-foreground rounded-lg flex items-center justify-center">
+                    <span className="text-background text-2xl">🚀</span>
                   </div>
                 </div>
               </div>
@@ -583,7 +601,7 @@ const HomePage = () => {
               {/* ML workflow visualization */}
               <div className="relative w-32 h-32">
                 <motion.svg 
-                  className="absolute inset-0 w-full h-full text-blue-500/40" 
+                  className="absolute inset-0 w-full h-full text-foreground/40" 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 128 128"
@@ -594,15 +612,15 @@ const HomePage = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M96 64C96 84 84 96 64 96C44 96 32 84 32 64" />
                 </motion.svg>
                 
-                <div className="absolute top-2 right-8 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-white rounded-full"></div>
+                <div className="absolute top-2 right-8 w-6 h-6 bg-foreground rounded-full flex items-center justify-center">
+                  <div className="w-3 h-3 bg-background rounded-full"></div>
                 </div>
                 
-                <div className="absolute bottom-8 left-2 w-8 h-8 border-2 border-purple-500 rounded-full flex items-center justify-center">
-                  <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
+                <div className="absolute bottom-8 left-2 w-8 h-8 border-2 border-muted-foreground rounded-full flex items-center justify-center">
+                  <div className="w-4 h-4 bg-muted-foreground rounded-full"></div>
                 </div>
                 
-                <div className="absolute top-8 left-8 text-green-500">
+                <div className="absolute top-8 left-8 text-foreground/60">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2L2 7v10c0 5.55 3.84 9.95 9 11 5.16-1.05 9-5.45 9-11V7l-10-5z"/>
                   </svg>
@@ -612,7 +630,7 @@ const HomePage = () => {
 
             {/* Right card - Data Scientists */}
             <motion.div 
-              className="relative w-80 h-96 bg-background border border-purple-500/30 rounded-3xl p-6 overflow-hidden shadow-lg"
+              className="relative w-80 h-96 bg-background border border-border rounded-3xl p-6 overflow-hidden shadow-professional"
               initial={{ opacity: 0, x: 50, rotateY: 15 }}
               animate={{ opacity: 1, x: 0, rotateY: 0 }}
               transition={{ duration: 1, delay: 0.8 }}
@@ -620,48 +638,48 @@ const HomePage = () => {
               style={{ transformStyle: 'preserve-3d' }}
             >
               {/* Card header */}
-              <div className="bg-purple-600/20 backdrop-blur-sm rounded-full px-4 py-2 w-fit mb-8">
-                <span className="text-purple-600 text-sm font-medium">Data Scientists</span>
+              <div className="bg-foreground/10 backdrop-blur-sm rounded-full px-4 py-2 w-fit mb-8">
+                <span className="text-foreground text-sm font-medium">Data Scientists</span>
               </div>
 
               {/* Feature list */}
               <div className="space-y-6">
                 <div className="flex items-start gap-3 text-foreground">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-foreground rounded-full mt-2 flex-shrink-0"></div>
                   <span className="text-sm leading-relaxed">Advanced feature engineering tools</span>
                 </div>
                 <div className="flex items-start gap-3 text-foreground">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-foreground rounded-full mt-2 flex-shrink-0"></div>
                   <span className="text-sm leading-relaxed">Experiment tracking & model comparison</span>
                 </div>
                 <div className="flex items-start gap-3 text-foreground">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></div>
                   <span className="text-sm leading-relaxed">Collaborative notebooks & workflows</span>
                 </div>
               </div>
 
               {/* Performance metrics display */}
               <div className="absolute bottom-6 left-6 right-6">
-                <div className="bg-muted/50 rounded-lg p-3 border border-purple-500/20">
+                <div className="bg-muted/50 rounded-lg p-3 border border-border">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs text-muted-foreground">Model Performance</span>
-                    <span className="text-xs text-green-600 font-mono">OPTIMAL</span>
+                    <span className="text-xs text-foreground font-mono">OPTIMAL</span>
                   </div>
                   <div className="flex gap-2">
                     <div className="text-center">
-                      <div className="text-sm font-bold text-purple-600">0.94</div>
+                      <div className="text-sm font-bold text-foreground">0.94</div>
                       <div className="text-xs text-muted-foreground">F1</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-sm font-bold text-blue-600">0.91</div>
+                      <div className="text-sm font-bold text-foreground">0.91</div>
                       <div className="text-xs text-muted-foreground">Precision</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-sm font-bold text-green-600">0.97</div>
+                      <div className="text-sm font-bold text-foreground">0.97</div>
                       <div className="text-xs text-muted-foreground">Recall</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-sm font-bold text-orange-600">0.89</div>
+                      <div className="text-sm font-bold text-muted-foreground">0.89</div>
                       <div className="text-xs text-muted-foreground">AUC</div>
                     </div>
                   </div>
@@ -678,18 +696,18 @@ const HomePage = () => {
             transition={{ duration: 0.8, delay: 1.6 }}
           >
             <motion.button
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium text-sm transition-all duration-200 shadow-lg"
-              whileHover={{ scale: 1.05, boxShadow: '0 10px 30px rgba(59, 130, 246, 0.3)' }}
+              className="bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black px-8 py-3 rounded-lg font-medium text-sm transition-all duration-200 shadow-lg hover:shadow-xl"
+              whileHover={{ scale: 1.05, boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)' }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/models')}
+              onClick={() => navigate('/mlmodels')}
             >
               🧠 Explore ML Models
             </motion.button>
             <motion.button
-              className="border border-purple-600 hover:bg-purple-600 hover:text-white text-purple-600 px-8 py-3 rounded-lg font-medium text-sm transition-all duration-200"
+              className="border-2 border-black hover:bg-black dark:border-white dark:hover:bg-white text-black hover:text-white dark:text-white dark:hover:text-black px-8 py-3 rounded-lg font-medium text-sm transition-all duration-200 backdrop-blur-sm"
               whileHover={{ 
                 scale: 1.05,
-                boxShadow: '0 10px 30px rgba(147, 51, 234, 0.2)'
+                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)'
               }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/datasets')}
@@ -712,7 +730,7 @@ const HomePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
               {/* Feature 1 */}
               <motion.div 
-                className="bg-background border border-blue-500/20 rounded-xl p-6 hover:border-blue-500/40 transition-all duration-300"
+                className="bg-background border border-border rounded-xl p-6 hover:border-foreground/40 transition-all duration-300 shadow-sm hover:shadow-md"
                 whileHover={{ scale: 1.02, y: -5 }}
               >
                 <div className="text-4xl mb-4">⚡</div>
@@ -724,7 +742,7 @@ const HomePage = () => {
 
               {/* Feature 2 */}
               <motion.div 
-                className="bg-background border border-purple-500/20 rounded-xl p-6 hover:border-purple-500/40 transition-all duration-300"
+                className="bg-background border border-border rounded-xl p-6 hover:border-foreground/40 transition-all duration-300 shadow-sm hover:shadow-md"
                 whileHover={{ scale: 1.02, y: -5 }}
               >
                 <div className="text-4xl mb-4">🎯</div>
@@ -736,7 +754,7 @@ const HomePage = () => {
 
               {/* Feature 3 */}
               <motion.div 
-                className="bg-background border border-green-500/20 rounded-xl p-6 hover:border-green-500/40 transition-all duration-300"
+                className="bg-background border border-border rounded-xl p-6 hover:border-foreground/40 transition-all duration-300 shadow-sm hover:shadow-md"
                 whileHover={{ scale: 1.02, y: -5 }}
               >
                 <div className="text-4xl mb-4">🔒</div>
@@ -756,19 +774,19 @@ const HomePage = () => {
             transition={{ duration: 0.8, delay: 2.4 }}
           >
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-blue-600">50K+</div>
+              <div className="text-3xl font-bold text-foreground">50K+</div>
               <div className="text-muted-foreground text-sm">Models Trained</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-purple-600">99.9%</div>
+              <div className="text-3xl font-bold text-foreground">99.9%</div>
               <div className="text-muted-foreground text-sm">Uptime SLA</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-green-600">2.4TB</div>
+              <div className="text-3xl font-bold text-foreground">2.4TB</div>
               <div className="text-muted-foreground text-sm">Data Processed</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold text-orange-600">24/7</div>
+              <div className="text-3xl font-bold text-foreground">24/7</div>
               <div className="text-muted-foreground text-sm">Support</div>
             </div>
           </motion.div>

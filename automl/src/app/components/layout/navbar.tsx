@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import ThemeToggle from './themetoggle';
+import { ThemeToggle } from '@/components/theme-toggle';
+
 const Navbar = () => {
   // const [isScrolled, setIsScrolled] = useState(false);
   const navItems = [
@@ -25,14 +25,14 @@ const Navbar = () => {
               transition={{ duration: 0.2 }}
             >
               <div
-                className="text-muted-foreground text-3xl md:text-4xl font-extrabold tracking-widest select-none"
+                className="text-foreground text-3xl md:text-4xl font-extrabold tracking-widest select-none"
                 style={{ letterSpacing: '0.15em', opacity: 0.7 }}
               >
                 <span className="inline-block align-middle mr-2">
                   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="2" y="2" width="28" height="28" rx="8" fill="#0ff" fillOpacity="0.12" />
-                    <path d="M8 24L24 8" stroke="#00fff7" strokeWidth="2.5" strokeLinecap="round"/>
-                    <circle cx="16" cy="16" r="5" stroke="#00fff7" strokeWidth="2.5"/>
+                    <rect x="2" y="2" width="28" height="28" rx="8" fill="currentColor" fillOpacity="0.12" />
+                    <path d="M8 24L24 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                    <circle cx="16" cy="16" r="5" stroke="currentColor" strokeWidth="2.5"/>
                   </svg>
                 </span>
                 AutoML
@@ -43,7 +43,7 @@ const Navbar = () => {
           {/* Navigation Links - Centered with Capsule Container */}
           <div className="hidden md:flex items-center justify-center flex-1 max-w-lg mx-auto">
             <motion.div 
-              className="flex items-center space-x-1 bg-gray-800/50 backdrop-blur-sm rounded-full px-2 py-1.5 border border-gray-700/30"
+              className="flex items-center space-x-1 bg-background/50 backdrop-blur-sm rounded-full px-2 py-1.5 border border-border"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -51,10 +51,9 @@ const Navbar = () => {
               {navItems.map((item, index) => (
                 <Link key={item.name} href={item.path} prefetch>
                   <motion.span
-                    className="text-muted-foreground hover:text-white transition-colors duration-200 text-sm font-medium px-4 py-2 rounded-full hover:bg-gray-700/30"
+                    className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-4 py-2 rounded-full hover:bg-accent"
                     whileHover={{ 
                       y: -1,
-                      backgroundColor: "rgba(55, 65, 81, 0.3)"
                     }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -71,7 +70,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             {/* X Icon */}
             <motion.button
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -82,7 +81,7 @@ const Navbar = () => {
 
             {/* Mail Icon */}
             <motion.button
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -97,14 +96,14 @@ const Navbar = () => {
             {/* Launch The Project Button */}
             <Link href="/dashboard" prefetch>
               <motion.span
-                className="bg-yellow-400 hover:bg-yellow-500 text-black px-5 py-2 rounded-full font-medium text-sm transition-all duration-200 flex items-center justify-center"
-                whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(251, 191, 36, 0.3)' }}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2 rounded-full font-medium text-sm transition-all duration-200 flex items-center justify-center"
+                whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3)' }}
                 whileTap={{ scale: 0.98 }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                � Dashboard
+                🚀 Dashboard
               </motion.span>
             </Link>
           </div>

@@ -5,6 +5,7 @@
   max-height: 100vh;
   box-sizing: border-box;
 }
+
 /* Global homepage background gradient style */
 .homepage-bg {
   background: var(--gradient-main);
@@ -12,6 +13,7 @@
   background-size: cover;
   background-attachment: fixed;
 }
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -57,73 +59,146 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 3.9%;
+  --background: 0 0% 100%; /* pure white */
+  --foreground: 0 0% 0%;   /* pure black */
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 3.9%;
+  --card-foreground: 0 0% 0%;
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 3.9%;
-  --primary: 0 0% 9%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 96.1%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 0 0% 96.1%;
-  --muted-foreground: 0 0% 45.1%;
-  --accent: 0 0% 96.1%;
-  --accent-foreground: 0 0% 9%;
+  --popover-foreground: 0 0% 0%;
+  --primary: 0 0% 0%; /* black */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 95%;
+  --secondary-foreground: 0 0% 0%;
+  --muted: 0 0% 95%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 0 0% 90%;
+  --accent-foreground: 0 0% 0%;
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 89.8%;
-  --input: 0 0% 89.8%;
-  --ring: 0 0% 3.9%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 85%;
+  --input: 0 0% 85%;
+  --ring: 0 0% 0%;
   --radius: 0.5rem;
-  /* Global gradients and accent backgrounds for theme */
-  --gradient-main: linear-gradient(90deg, #6366f1 0%, #ffffff 100%);
-  --gradient-accent: linear-gradient(90deg, #f472b6 0%, #6366f1 100%);
-  --gradient-success: linear-gradient(90deg, #34d399 0%, #6366f1 100%);
-  --gradient-warning: linear-gradient(90deg, #fbbf24 0%, #a21caf 100%);
-  --gradient-card: linear-gradient(135deg, #f3e8ff 0%, #e0e7ff 100%);
-  --bg-accent: #f3e8ff;
-  --bg-accent-dark: #312e81;
+  
+  /* Black and white gradients for light mode */
+  --gradient-main: linear-gradient(135deg, #000000 0%, #333333 50%, #666666 100%);
+  --gradient-accent: linear-gradient(135deg, #666666 0%, #333333 50%, #000000 100%);
+  --gradient-success: linear-gradient(135deg, #333333 0%, #000000 100%);
+  --gradient-warning: linear-gradient(135deg, #000000 0%, #333333 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(250,250,250,0.8) 100%);
 }
 
 .dark {
-  --background: 0 0% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14.9%;
-  --muted-foreground: 0 0% 63.9%;
-  --accent: 0 0% 14.9%;
-  --accent-foreground: 0 0% 98%;
+  --background: 0 0% 0%;   /* pure black */
+  --foreground: 0 0% 100%; /* pure white */
+  --card: 0 0% 0%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 0%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 0 0% 100%; /* white */
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 60%;
+  --accent: 0 0% 20%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 14.9%;
-  --input: 0 0% 14.9%;
-  --ring: 0 0% 83.1%;
-  /* Global gradients and accent backgrounds for dark theme */
-  --gradient-main: linear-gradient(90deg, #6366f1 0%, #a21caf 100%);
-  --gradient-accent: linear-gradient(90deg, #f472b6 0%, #6366f1 100%);
-  --gradient-success: linear-gradient(90deg, #34d399 0%, #6366f1 100%);
-  --gradient-warning: linear-gradient(90deg, #fbbf24 0%, #a21caf 100%);
-  --gradient-card: linear-gradient(135deg, #312e81 0%, #6366f1 100%);
-  --bg-accent: #312e81;
-  --bg-accent-dark: #f3e8ff;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 0 0% 100%;
+  
+  /* Black and white gradients for dark mode */
+  --gradient-main: linear-gradient(135deg, #ffffff 0%, #cccccc 50%, #999999 100%);
+  --gradient-accent: linear-gradient(135deg, #999999 0%, #cccccc 50%, #ffffff 100%);
+  --gradient-success: linear-gradient(135deg, #cccccc 0%, #ffffff 100%);
+  --gradient-warning: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+  --gradient-card: linear-gradient(135deg, rgba(96, 92, 92, 0.9) 0%, rgba(193, 156, 156, 0.8) 100%);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Black and white gradient utility classes */
+.bg-gradient-main {
+  background: var(--gradient-main);
+}
+
+.bg-gradient-accent {
+  background: var(--gradient-accent);
+}
+
+.bg-gradient-success {
+  background: var(--gradient-success);
+}
+
+.bg-gradient-warning {
+  background: var(--gradient-warning);
+}
+
+.bg-gradient-card {
+  background: var(--gradient-card);
+}
+
+/* Glass effect with black and white theme */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .glass-effect {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.text-gradient {
+  background: var(--gradient-main);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Black and white themed shadows */
+.shadow-professional {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dark .shadow-professional {
+  box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.3), 0 2px 4px -1px rgba(255, 255, 255, 0.1);
+}
+
+/* Theme-aware button styles */
+.btn-theme {
+  transition: all 0.3s ease;
+}
+
+.btn-theme:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive gradient text for different screen sizes */
+@media (max-width: 640px) {
+  .text-gradient {
+    background-size: 100% 100%;
+    animation: none;
   }
 }
