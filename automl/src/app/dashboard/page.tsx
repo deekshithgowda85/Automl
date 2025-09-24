@@ -24,6 +24,14 @@ function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [apiStatus, setApiStatus] = useState<'unknown' | 'working' | 'error'>('unknown');
+  
+  // Code viewer and output panel states
+  const [showCodeViewer, setShowCodeViewer] = useState(false);
+  const [showOutputPanel, setShowOutputPanel] = useState(false);
+  const [currentCode, setCurrentCode] = useState('# No code generated yet\nprint("Welcome to AutoML!")');
+  const [currentOutput, setCurrentOutput] = useState('Welcome to AutoML Code Viewer!\nGenerate a model to see code and output here.');
+  const [lastModelData, setLastModelData] = useState<{code?: string, output?: string, encodedCode?: string} | null>(null);
+  
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
       id: '1',
@@ -227,10 +235,27 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
       if (result.success) {
         responseContent = `🎉 **ML Model Created Successfully!**\n\n${result.message}\n\n**📊 Model Training Results:**\n\`\`\`\n${result.output}\`\`\`\n\n**💻 Generated Python Code:** (Click download to get code)\n\n**📥 Ready for Download:**\nYour trained model is ready as a downloadable .pkl file!`;
         
+        // Update code viewer and output panel
+        setCurrentCode(result.code || '# Code generation failed');
+        setCurrentOutput(`🤖 AutoML Model Creation\n${'='.repeat(50)}\nTask: ${input}\n${'='.repeat(50)}\n\n${result.output || 'No output available'}`);
+        setLastModelData({
+          code: result.code,
+          output: result.output,
+          encodedCode: encodeURIComponent(result.code)
+        });
+        
+        // Auto-show panels when model is created successfully
+        setShowCodeViewer(true);
+        setShowOutputPanel(true);
+        
         // Add download button data (using encodeURIComponent to handle Unicode)
         responseContent += `\n\n[DOWNLOAD_MODEL_BUTTON:${encodeURIComponent(result.code)}]`;
       } else {
         responseContent = `❌ **Model Creation Error**\n\nFailed to create ML model: ${result.error}\n\nPlease try again with a different description.`;
+        
+        // Update output panel with error info
+        setCurrentOutput(`❌ AutoML Model Creation Failed\n${'='.repeat(50)}\nTask: ${input}\nError: ${result.error}\n${'='.repeat(50)}\n\nPlease try again with a different description.`);
+        setShowOutputPanel(true);
       }
 
       // Replace status message with result
@@ -478,6 +503,32 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {/* Code Viewer Button */}
+                <button
+                  onClick={() => setShowCodeViewer(!showCodeViewer)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                    showCodeViewer 
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  <span className="text-xs">📄</span>
+                  Code
+                </button>
+                
+                {/* Output Panel Button */}
+                <button
+                  onClick={() => setShowOutputPanel(!showOutputPanel)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                    showOutputPanel 
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' 
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  <span className="text-xs">📊</span>
+                  Output
+                </button>
+                
                 <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
                   apiStatus === 'working' 
                     ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' 
@@ -497,6 +548,73 @@ I'm powered by Gemini AI and E2B sandbox to help you with machine learning conce
               </div>
             </div>
           </div>
+
+          {/* Code Viewer and Output Panels */}
+          {(showCodeViewer || showOutputPanel) && (
+            <div className="border-b border-border bg-muted/20">
+              <div className="flex h-80">
+                {/* Code Viewer Panel */}
+                {showCodeViewer && (
+                  <div className={`${showOutputPanel ? 'w-1/2 border-r border-border' : 'w-full'} flex flex-col`}>
+                    <div className="flex items-center justify-between p-3 bg-muted/40 border-b border-border">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs">📄</span>
+                        <span className="text-sm font-medium">Generated Code</span>
+                      </div>
+                      <button
+                        onClick={() => setShowCodeViewer(false)}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <div className="flex-1 overflow-auto">
+                      <pre className="p-4 text-xs font-mono text-foreground whitespace-pre-wrap leading-relaxed">
+                        <code>{currentCode}</code>
+                      </pre>
+                    </div>
+                  </div>
+                )}
+
+                {/* Output Panel */}
+                {showOutputPanel && (
+                  <div className={`${showCodeViewer ? 'w-1/2' : 'w-full'} flex flex-col`}>
+                    <div className="flex items-center justify-between p-3 bg-muted/40 border-b border-border">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs">📊</span>
+                        <span className="text-sm font-medium">Model Output & Terminal</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {lastModelData && (
+                          <button
+                            onClick={() => {
+                              if (lastModelData.encodedCode) {
+                                handleModelDownload(lastModelData.encodedCode);
+                              }
+                            }}
+                            className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded flex items-center gap-1"
+                          >
+                            📥 Download
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setShowOutputPanel(false)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex-1 overflow-auto bg-black text-green-400">
+                      <pre className="p-4 text-xs font-mono whitespace-pre-wrap leading-relaxed">
+                        {currentOutput}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
