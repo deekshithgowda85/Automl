@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Moon, Sun } from 'lucide-react'
-import { useTheme } from '../../../../DEMOML/src/app/components/providers/theme-provider'
+import { useTheme } from '../app/components/providers/theme-provider'
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
