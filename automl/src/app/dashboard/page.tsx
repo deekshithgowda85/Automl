@@ -35,16 +35,29 @@ function DashboardPage() {
           type: 'assistant',
           content: `Welcome to your AutoML Assistant! 🤖
 
-I'm powered by Gemini AI and ready to help you with machine learning questions, concepts, and guidance.
+I'm powered by Gemini AI to help you with machine learning concepts and workflows. I can assist you with:
 
-**Try asking me about:**
+## 🔥 **What I Can Do:**
+• **ML Guidance**: Help you understand machine learning concepts and algorithms
+• **Algorithm Selection**: Recommend the best ML approaches for your problems
+• **Data Analysis**: Guide you through data preprocessing and feature engineering
+• **Model Evaluation**: Explain metrics and validation techniques
+• **Best Practices**: Share ML workflows and optimization strategies
+
+## 💡 **Ask Me About:**
 • "What's the best algorithm for classification?"
 • "How do I handle missing data in my dataset?"
-• "Explain the difference between supervised and unsupervised learning"
-• "Help me choose features for my ML model"
-• "What are some common ML evaluation metrics?"
+• "Explain cross-validation and why it's important"
+• "Help me choose between Random Forest and SVM"
+• "What preprocessing steps should I apply?"
 
-I can provide detailed explanations, code examples, and best practices for your ML projects. What would you like to learn about today?`,
+## 🚀 **Pro Tips:**
+• I can explain complex ML concepts in simple terms
+• Ask for specific guidance on your ML project
+• Request algorithm comparisons and recommendations
+• Get help with data preprocessing strategies
+
+**Ready to explore machine learning?** Ask me anything about ML concepts, algorithms, or your specific project needs!`,
           timestamp: new Date(Date.now() - 300000)
         }
       ]

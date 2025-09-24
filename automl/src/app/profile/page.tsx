@@ -5,7 +5,9 @@ import {
   FolderOpen, Database, BarChart3, Brain, Code, Zap, 
   TrendingUp, Target, Clock, CheckCircle, AlertCircle, 
   Play, Download, Eye, Trash2, Plus, Search, Filter,
-  FileText, Users, Activity, Award, MoreHorizontal, Star
+  FileText, Users, Activity, Award, MoreHorizontal, Star,
+  Shield, Settings, Bell, Lock, Key, Globe2, Github,
+  Briefcase, Heart, Coffee, Sparkles, Layers
 } from 'lucide-react';
 import Navbar from '../components/layout/navbar';
 import Footer from '../components/layout/footer';
@@ -273,33 +275,33 @@ export default function ProfilePage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">My Projects</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {projects.length} projects • {projects.filter(p => p.status === 'deployed').length} deployed
+          <h1 className="text-3xl font-bold text-gradient">My Projects</h1>
+          <p className="text-muted-foreground mt-2">
+            {projects.length} projects • {projects.filter(p => p.status === 'deployed').length} deployed • {Math.round(projects.filter(p => p.accuracy > 0).reduce((acc, p) => acc + p.accuracy, 0) / projects.filter(p => p.accuracy > 0).length)}% avg accuracy
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-          <Plus className="w-4 h-4" />
+        <button className="flex items-center gap-2 bg-gradient-main text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 btn-theme shadow-professional">
+          <Plus className="w-5 h-5" />
           New Project
         </button>
       </div>
 
-      {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Enhanced Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <input
             type="text"
-            placeholder="Search projects..."
+            placeholder="Search projects by name, description, or model type..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-12 pr-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 shadow-professional glass-effect"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="px-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 shadow-professional glass-effect min-w-[140px]"
         >
           <option value="all">All Status</option>
           <option value="completed">Completed</option>
@@ -309,75 +311,133 @@ export default function ProfilePage() {
         </select>
       </div>
 
-      {/* Projects List */}
-      <div className="space-y-4">
-        {filteredProjects.map((project) => {
+      {/* Enhanced Projects List */}
+      <div className="grid gap-6">
+        {filteredProjects.map((project, index) => {
           const statusInfo = getStatusInfo(project.status);
           const StatusIcon = statusInfo.icon;
           
           return (
-            <div key={project.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <div 
+              key={project.id} 
+              className="bg-card glass-effect border border-border rounded-2xl p-6 hover:shadow-lg transition-all duration-300 group animate-fadeIn"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{project.name}</h3>
-                    {project.favorite && <Star className="w-4 h-4 text-yellow-500 fill-current" />}
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${statusInfo.color}`}>
-                      <StatusIcon className="w-3 h-3" />
-                      {project.status}
-                    </span>
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="w-12 h-12 bg-gradient-main rounded-xl flex items-center justify-center shadow-professional group-hover:scale-110 transition-transform duration-300">
+                      <Brain className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h3 className="text-xl font-semibold text-foreground group-hover:text-gradient transition-all duration-300">{project.name}</h3>
+                        {project.favorite && (
+                          <div className="p-1 bg-gradient-warning rounded-lg">
+                            <Star className="w-4 h-4 text-white fill-current" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border transition-all duration-300 ${statusInfo.color}`}>
+                          <StatusIcon className="w-4 h-4" />
+                          {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                        </span>
+                        <span className="text-sm text-muted-foreground">{project.type}</span>
+                      </div>
+                    </div>
                   </div>
                   
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{project.description}</p>
+                  <p className="text-muted-foreground mb-4 leading-relaxed">{project.description}</p>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500 block">Type</span>
-                      <span className="font-medium">{project.type}</span>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <BarChart3 className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Model</span>
+                      </div>
+                      <span className="font-semibold text-foreground">{project.model}</span>
                     </div>
-                    <div>
-                      <span className="text-gray-500 block">Model</span>
-                      <span className="font-medium">{project.model}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 block">Accuracy</span>
-                      <span className={`font-medium ${project.accuracy > 85 ? 'text-green-600' : project.accuracy > 75 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    <div className="p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Target className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Accuracy</span>
+                      </div>
+                      <span className={`font-semibold ${project.accuracy > 85 ? 'text-green-600' : project.accuracy > 75 ? 'text-yellow-600' : 'text-red-600'}`}>
                         {project.status === 'training' ? 'Training...' : `${project.accuracy}%`}
                       </span>
                     </div>
-                    <div>
-                      <span className="text-gray-500 block">Samples</span>
-                      <span className="font-medium">{project.samples.toLocaleString()}</span>
+                    <div className="p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Database className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Samples</span>
+                      </div>
+                      <span className="font-semibold text-foreground">{project.samples.toLocaleString()}</span>
+                    </div>
+                    <div className="p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Layers className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Features</span>
+                      </div>
+                      <span className="font-semibold text-foreground">{project.features}</span>
                     </div>
                   </div>
                   
                   {project.notes && (
-                    <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded text-sm text-gray-600 dark:text-gray-400">
-                      <strong>Note:</strong> {project.notes}
+                    <div className="mt-4 p-3 bg-accent/50 rounded-xl border-l-4 border-primary">
+                      <div className="flex items-start gap-2">
+                        <FileText className="w-4 h-4 text-primary mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Note</p>
+                          <p className="text-sm text-muted-foreground">{project.notes}</p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
                 
-                <div className="flex items-center gap-1 ml-4">
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors">
-                    <Eye className="w-4 h-4" />
+                <div className="flex items-center gap-2 ml-6">
+                  <button className="p-3 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-all duration-300 group-hover:scale-110">
+                    <Eye className="w-5 h-5" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors">
-                    <MoreHorizontal className="w-4 h-4" />
+                  <button className="p-3 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-all duration-300 group-hover:scale-110">
+                    <MoreHorizontal className="w-5 h-5" />
                   </button>
                 </div>
               </div>
               
-              <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500">
-                <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
-                {project.lastTrained && (
-                  <span>Last trained {new Date(project.lastTrained).toLocaleDateString()}</span>
-                )}
+              <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Created {new Date(project.createdAt).toLocaleDateString()}
+                  </div>
+                  {project.lastTrained && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Last trained {new Date(project.lastTrained).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-primary">
+                  <Play className="w-4 h-4" />
+                  <span className="font-medium">View Details</span>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
+      
+      {filteredProjects.length === 0 && (
+        <div className="text-center py-16">
+          <div className="w-24 h-24 bg-gradient-main rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="w-12 h-12 text-white" />
+          </div>
+          <h3 className="text-xl font-semibold text-foreground mb-2">No projects found</h3>
+          <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
+        </div>
+      )}
     </div>
   );
 
@@ -385,357 +445,572 @@ export default function ProfilePage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Datasets</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {datasets.length} datasets • {(datasets.reduce((acc, d) => acc + parseFloat(d.size), 0)).toFixed(1)} MB total
+          <h1 className="text-3xl font-bold text-gradient">Datasets</h1>
+          <p className="text-muted-foreground mt-2">
+            {datasets.length} datasets • {(datasets.reduce((acc, d) => acc + parseFloat(d.size), 0)).toFixed(1)} MB total • {datasets.filter(d => d.status === 'ready').length} ready to use
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
-          <Plus className="w-4 h-4" />
-          Upload Data
+        <button className="flex items-center gap-2 bg-gradient-accent text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 btn-theme shadow-professional">
+          <Plus className="w-5 h-5" />
+          Upload Dataset
         </button>
       </div>
 
-      {/* Search */}
+      {/* Enhanced Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
         <input
           type="text"
-          placeholder="Search datasets..."
+          placeholder="Search datasets by name, type, or description..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          className="w-full pl-12 pr-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 shadow-professional glass-effect"
         />
       </div>
 
-      {/* Datasets List */}
-      <div className="space-y-4">
-        {filteredDatasets.map((dataset) => {
+      {/* Enhanced Datasets List */}
+      <div className="grid gap-6">
+        {filteredDatasets.map((dataset, index) => {
           const statusInfo = getStatusInfo(dataset.status);
           const StatusIcon = statusInfo.icon;
           
           return (
-            <div key={dataset.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <div 
+              key={dataset.id} 
+              className="bg-card glass-effect border border-border rounded-2xl p-6 hover:shadow-lg transition-all duration-300 group animate-fadeIn"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Database className="w-5 h-5 text-gray-400" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{dataset.name}</h3>
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${statusInfo.color}`}>
-                      <StatusIcon className="w-3 h-3" />
-                      {dataset.status}
-                    </span>
-                    {dataset.quality && (
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getQualityBadge(dataset.quality)}`}>
-                        {dataset.quality}
-                      </span>
-                    )}
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="w-12 h-12 bg-gradient-success rounded-xl flex items-center justify-center shadow-professional group-hover:scale-110 transition-transform duration-300">
+                      <Database className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-semibold text-foreground group-hover:text-gradient transition-all duration-300">{dataset.name}</h3>
+                        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border transition-all duration-300 ${statusInfo.color}`}>
+                          <StatusIcon className="w-4 h-4" />
+                          {dataset.status.charAt(0).toUpperCase() + dataset.status.slice(1)}
+                        </span>
+                        {dataset.quality && (
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getQualityBadge(dataset.quality)}`}>
+                            {dataset.quality}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{dataset.type}</p>
+                    </div>
                   </div>
                   
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{dataset.description}</p>
+                  <p className="text-muted-foreground mb-4 leading-relaxed">{dataset.description}</p>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500 block">Type</span>
-                      <span className="font-medium">{dataset.type}</span>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <FileText className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Size</span>
+                      </div>
+                      <span className="font-semibold text-foreground">{dataset.size}</span>
                     </div>
-                    <div>
-                      <span className="text-gray-500 block">Size</span>
-                      <span className="font-medium">{dataset.size}</span>
+                    <div className="p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <BarChart3 className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Rows</span>
+                      </div>
+                      <span className="font-semibold text-foreground">{dataset.rows.toLocaleString()}</span>
                     </div>
-                    <div>
-                      <span className="text-gray-500 block">Rows</span>
-                      <span className="font-medium">{dataset.rows.toLocaleString()}</span>
+                    <div className="p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Layers className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Columns</span>
+                      </div>
+                      <span className="font-semibold text-foreground">{dataset.columns}</span>
                     </div>
-                    <div>
-                      <span className="text-gray-500 block">Columns</span>
-                      <span className="font-medium">{dataset.columns}</span>
+                    <div className="p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <FolderOpen className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Used In</span>
+                      </div>
+                      <span className="font-semibold text-primary">{dataset.usedIn} project{dataset.usedIn !== 1 ? 's' : ''}</span>
                     </div>
-                    <div>
-                      <span className="text-gray-500 block">Used In</span>
-                      <span className="font-medium text-blue-600">{dataset.usedIn} project{dataset.usedIn !== 1 ? 's' : ''}</span>
+                    <div className="p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Uploaded</span>
+                      </div>
+                      <span className="font-semibold text-foreground">{new Date(dataset.uploadDate).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-1 ml-4">
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors">
-                    <Eye className="w-4 h-4" />
+                <div className="flex items-center gap-2 ml-6">
+                  <button className="p-3 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-all duration-300 group-hover:scale-110">
+                    <Eye className="w-5 h-5" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors">
-                    <Download className="w-4 h-4" />
+                  <button className="p-3 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-all duration-300 group-hover:scale-110">
+                    <Download className="w-5 h-5" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors">
-                    <MoreHorizontal className="w-4 h-4" />
+                  <button className="p-3 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-all duration-300 group-hover:scale-110">
+                    <MoreHorizontal className="w-5 h-5" />
                   </button>
                 </div>
               </div>
               
-              <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500">
-                <span>Uploaded {new Date(dataset.uploadDate).toLocaleDateString()}</span>
-                {dataset.lastUsed && (
-                  <span>Last used {new Date(dataset.lastUsed).toLocaleDateString()}</span>
-                )}
+              <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Uploaded {new Date(dataset.uploadDate).toLocaleDateString()}
+                  </div>
+                  {dataset.lastUsed && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Last used {new Date(dataset.lastUsed).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-primary">
+                  <Activity className="w-4 h-4" />
+                  <span className="font-medium">Analyze Data</span>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
+      
+      {filteredDatasets.length === 0 && (
+        <div className="text-center py-16">
+          <div className="w-24 h-24 bg-gradient-success rounded-full flex items-center justify-center mx-auto mb-4">
+            <Database className="w-12 h-12 text-white" />
+          </div>
+          <h3 className="text-xl font-semibold text-foreground mb-2">No datasets found</h3>
+          <p className="text-muted-foreground">Upload your first dataset or adjust your search criteria</p>
+        </div>
+      )}
     </div>
   );
 
   const renderProfileTab = () => (
-    <div className="max-w-2xl space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Profile Settings</h1>
-        {!isEditing ? (
-          <button
-            onClick={handleEdit}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <Edit3 className="w-4 h-4" />
-            Edit
-          </button>
-        ) : (
-          <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm transition-colors"
-            >
-              <Save className="w-4 h-4" />
-              Save
-            </button>
-            <button
-              onClick={handleCancel}
-              className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-sm transition-colors"
-            >
-              <X className="w-4 h-4" />
-              Cancel
-            </button>
+    <div className="max-w-4xl mx-auto">
+      {/* Hero Section */}
+      <div className="relative mb-8 overflow-hidden">
+        <div className="bg-gradient-card glass-effect rounded-2xl p-8 border border-border shadow-professional">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-4 right-4 w-32 h-32 border-2 border-primary rounded-full"></div>
+            <div className="absolute bottom-4 left-4 w-24 h-24 border border-primary rounded-full"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-primary rotate-45"></div>
           </div>
-        )}
-      </div>
-
-      {/* Profile Header */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-semibold relative">
-            {profileData.name.split(' ').map(n => n[0]).join('')}
-            <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center border-2 border-white">
-              <Camera className="w-3 h-3 text-gray-600" />
-            </button>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{profileData.name}</h2>
-            <p className="text-gray-600 dark:text-gray-400">{profileData.role} at {profileData.company}</p>
-            <p className="text-gray-500 text-sm mt-1">{profileData.specialization}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Basic Info */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h3>
-        
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              ) : (
-                <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">{profileData.name}</p>
-              )}
+          
+          {/* Profile Header */}
+          <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="relative group">
+              <div className="w-24 h-24 bg-gradient-main rounded-3xl flex items-center justify-center text-white text-2xl font-bold shadow-professional">
+                {profileData.name.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-3xl"></div>
+              <button className="absolute -bottom-2 -right-2 w-8 h-8 bg-card hover:bg-accent rounded-full flex items-center justify-center border-2 border-background shadow-lg group-hover:scale-110 transition-all duration-300">
+                <Camera className="w-4 h-4 text-foreground" />
+              </button>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-              {isEditing ? (
-                <input
-                  type="email"
-                  value={editData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+            
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-gradient">{profileData.name}</h1>
+                <div className="flex items-center gap-2 px-3 py-1 bg-accent rounded-full">
+                  <Briefcase className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">{profileData.role}</span>
+                </div>
+              </div>
+              <p className="text-muted-foreground text-lg">{profileData.specialization} at {profileData.company}</p>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  {profileData.location}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  Member since {profileData.joinDate}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              {!isEditing ? (
+                <button
+                  onClick={handleEdit}
+                  className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-medium hover:bg-accent hover:text-accent-foreground transition-all duration-300 btn-theme shadow-professional"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  Edit Profile
+                </button>
               ) : (
-                <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">{profileData.email}</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSave}
+                    className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-accent hover:text-accent-foreground transition-all duration-300 btn-theme"
+                  >
+                    <Save className="w-4 h-4" />
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-lg font-medium hover:bg-muted transition-all duration-300"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </button>
+                </div>
               )}
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
-              {isEditing ? (
-                <input
-                  type="tel"
-                  value={editData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              ) : (
-                <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">{profileData.phone}</p>
-              )}
+          
+          {/* Quick Stats */}
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-card rounded-xl border border-border hover:shadow-professional transition-all duration-300 group">
+              <div className="w-12 h-12 bg-gradient-main rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                <FolderOpen className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">{projects.length}</div>
+              <div className="text-sm text-muted-foreground">Projects</div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              ) : (
-                <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">{profileData.location}</p>
-              )}
+            <div className="text-center p-4 bg-card rounded-xl border border-border hover:shadow-professional transition-all duration-300 group">
+              <div className="w-12 h-12 bg-gradient-accent rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                <Database className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">{datasets.length}</div>
+              <div className="text-sm text-muted-foreground">Datasets</div>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
-            {isEditing ? (
-              <textarea
-                value={editData.bio}
-                onChange={(e) => handleInputChange('bio', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-              />
-            ) : (
-              <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white leading-relaxed">{profileData.bio}</p>
-            )}
+            <div className="text-center p-4 bg-card rounded-xl border border-border hover:shadow-professional transition-all duration-300 group">
+              <div className="w-12 h-12 bg-gradient-success rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">{projects.filter(p => p.status === 'deployed').length}</div>
+              <div className="text-sm text-muted-foreground">Deployed</div>
+            </div>
+            <div className="text-center p-4 bg-card rounded-xl border border-border hover:shadow-professional transition-all duration-300 group">
+              <div className="w-12 h-12 bg-gradient-warning rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                {Math.round(projects.filter(p => p.accuracy > 0).reduce((acc, p) => acc + p.accuracy, 0) / projects.filter(p => p.accuracy > 0).length)}%
+              </div>
+              <div className="text-sm text-muted-foreground">Avg Score</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Work Info */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Work Information</h3>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company</label>
-            {isEditing ? (
-              <input
-                type="text"
-                value={editData.company}
-                onChange={(e) => handleInputChange('company', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            ) : (
-              <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">{profileData.company}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
-            {isEditing ? (
-              <input
-                type="text"
-                value={editData.role}
-                onChange={(e) => handleInputChange('role', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            ) : (
-              <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">{profileData.role}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Specialization</label>
-            {isEditing ? (
-              <input
-                type="text"
-                value={editData.specialization}
-                onChange={(e) => handleInputChange('specialization', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            ) : (
-              <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">{profileData.specialization}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Member Since</label>
-            <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">{profileData.joinDate}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Links */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Links & Social</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Website</label>
-            {isEditing ? (
-              <input
-                type="url"
-                value={editData.website}
-                onChange={(e) => handleInputChange('website', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            ) : (
-              <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <a href={`https://${profileData.website}`} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                  {profileData.website}
-                </a>
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GitHub</label>
-            {isEditing ? (
-              <input
-                type="text"
-                value={editData.github}
-                onChange={(e) => handleInputChange('github', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            ) : (
-              <p className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <a href={`https://github.com/${profileData.github}`} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                  @{profileData.github}
-                </a>
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Stats</h3>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">{projects.length}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Projects</div>
-          </div>
-          <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{datasets.length}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Datasets</div>
-          </div>
-          <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">{projects.filter(p => p.status === 'deployed').length}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Deployed</div>
-          </div>
-          <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600">
-              {Math.round(projects.filter(p => p.accuracy > 0).reduce((acc, p) => acc + p.accuracy, 0) / projects.filter(p => p.accuracy > 0).length)}%
+        {/* Left Column - Personal & Work Info */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Personal Information Card */}
+          <div className="bg-card glass-effect rounded-2xl p-6 border border-border shadow-professional animate-fadeIn">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-main rounded-lg flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground">Personal Information</h3>
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Avg Score</div>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                    <User className="w-4 h-4" />
+                    Full Name
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                    />
+                  ) : (
+                    <div className="px-4 py-3 bg-muted rounded-xl text-foreground font-medium">{profileData.name}</div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                    <Mail className="w-4 h-4" />
+                    Email Address
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="email"
+                      value={editData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                    />
+                  ) : (
+                    <div className="px-4 py-3 bg-muted rounded-xl text-foreground font-medium">{profileData.email}</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                    <Phone className="w-4 h-4" />
+                    Phone Number
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="tel"
+                      value={editData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                    />
+                  ) : (
+                    <div className="px-4 py-3 bg-muted rounded-xl text-foreground font-medium">{profileData.phone}</div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                    <MapPin className="w-4 h-4" />
+                    Location
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editData.location}
+                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                    />
+                  ) : (
+                    <div className="px-4 py-3 bg-muted rounded-xl text-foreground font-medium">{profileData.location}</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                  <FileText className="w-4 h-4" />
+                  Professional Bio
+                </label>
+                {isEditing ? (
+                  <textarea
+                    value={editData.bio}
+                    onChange={(e) => handleInputChange('bio', e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 resize-none"
+                  />
+                ) : (
+                  <div className="px-4 py-3 bg-muted rounded-xl text-foreground leading-relaxed">{profileData.bio}</div>
+                )}
+              </div>
+            </div>
           </div>
+
+          {/* Professional Information Card */}
+          <div className="bg-card glass-effect rounded-2xl p-6 border border-border shadow-professional animate-fadeIn">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-accent rounded-lg flex items-center justify-center">
+                <Briefcase className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground">Professional Details</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                  <Briefcase className="w-4 h-4" />
+                  Company
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editData.company}
+                    onChange={(e) => handleInputChange('company', e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                  />
+                ) : (
+                  <div className="px-4 py-3 bg-muted rounded-xl text-foreground font-medium">{profileData.company}</div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                  <User className="w-4 h-4" />
+                  Role/Title
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editData.role}
+                    onChange={(e) => handleInputChange('role', e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                  />
+                ) : (
+                  <div className="px-4 py-3 bg-muted rounded-xl text-foreground font-medium">{profileData.role}</div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                  <Brain className="w-4 h-4" />
+                  Specialization
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editData.specialization}
+                    onChange={(e) => handleInputChange('specialization', e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                  />
+                ) : (
+                  <div className="px-4 py-3 bg-muted rounded-xl text-foreground font-medium">{profileData.specialization}</div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                  <Calendar className="w-4 h-4" />
+                  Member Since
+                </label>
+                <div className="px-4 py-3 bg-muted rounded-xl text-foreground font-medium">{profileData.joinDate}</div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+
+        {/* Right Column - Links & Activities */}
+        <div className="space-y-6">
+          
+          {/* Links & Social Card */}
+          <div className="bg-card glass-effect rounded-2xl p-6 border border-border shadow-professional animate-fadeIn">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-success rounded-lg flex items-center justify-center">
+                <Globe2 className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Links & Social</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                  <Globe2 className="w-4 h-4" />
+                  Website
+                </label>
+                {isEditing ? (
+                  <input
+                    type="url"
+                    value={editData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                  />
+                ) : (
+                  <div className="px-4 py-3 bg-muted rounded-xl">
+                    <a href={`https://${profileData.website}`} className="text-primary hover:text-accent-foreground font-medium transition-colors duration-300" target="_blank" rel="noopener noreferrer">
+                      {profileData.website}
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                  <Github className="w-4 h-4" />
+                  GitHub
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editData.github}
+                    onChange={(e) => handleInputChange('github', e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                  />
+                ) : (
+                  <div className="px-4 py-3 bg-muted rounded-xl">
+                    <a href={`https://github.com/${profileData.github}`} className="text-primary hover:text-accent-foreground font-medium transition-colors duration-300" target="_blank" rel="noopener noreferrer">
+                      @{profileData.github}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Activity Card */}
+          <div className="bg-card glass-effect rounded-2xl p-6 border border-border shadow-professional animate-fadeIn">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-warning rounded-lg flex items-center justify-center">
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors duration-300">
+                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Completed Customer Retention Model</p>
+                  <p className="text-xs text-muted-foreground">2 hours ago</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors duration-300">
+                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Uploaded new dataset</p>
+                  <p className="text-xs text-muted-foreground">1 day ago</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors duration-300">
+                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Deployed Product Categorizer</p>
+                  <p className="text-xs text-muted-foreground">3 days ago</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Achievement Badges */}
+          <div className="bg-card glass-effect rounded-2xl p-6 border border-border shadow-professional animate-fadeIn">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-main rounded-lg flex items-center justify-center">
+                <Award className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Achievements</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors duration-300 group">
+                <div className="w-8 h-8 bg-gradient-main rounded-full mx-auto mb-2 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <p className="text-xs font-medium text-foreground">First Deploy</p>
+              </div>
+              <div className="text-center p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors duration-300 group">
+                <div className="w-8 h-8 bg-gradient-accent rounded-full mx-auto mb-2 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Target className="w-4 h-4 text-white" />
+                </div>
+                <p className="text-xs font-medium text-foreground">High Accuracy</p>
+              </div>
+              <div className="text-center p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors duration-300 group">
+                <div className="w-8 h-8 bg-gradient-success rounded-full mx-auto mb-2 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Coffee className="w-4 h-4 text-white" />
+                </div>
+                <p className="text-xs font-medium text-foreground">Early Bird</p>
+              </div>
+              <div className="text-center p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors duration-300 group">
+                <div className="w-8 h-8 bg-gradient-warning rounded-full mx-auto mb-2 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Layers className="w-4 h-4 text-white" />
+                </div>
+                <p className="text-xs font-medium text-foreground">Data Master</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -755,37 +1030,52 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white transition-colors duration-300">
+    <div className="min-h-screen bg-background transition-all duration-300">
       <Navbar />
       <main className="pt-24 pb-16">
-        <div className="max-w-6xl mx-auto px-6">
-          {/* Simple Tab Navigation */}
-          <div className="flex space-x-1 mb-8 bg-white dark:bg-gray-900 p-1 rounded-xl border border-gray-200 dark:border-gray-800 w-fit">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setSearchTerm('');
-                    setFilterStatus('all');
-                  }}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                    activeTab === tab.id
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="font-medium">{tab.label}</span>
-                </button>
-              );
-            })}
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Enhanced Tab Navigation */}
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gradient mb-2">Profile Dashboard</h1>
+              <p className="text-muted-foreground">Manage your profile, projects, and datasets</p>
+            </div>
+            
+            <div className="flex items-center gap-2 p-1 bg-card glass-effect rounded-2xl border border-border shadow-professional mt-4 sm:mt-0">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setSearchTerm('');
+                      setFilterStatus('all');
+                    }}
+                    className={`relative flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 group ${
+                      activeTab === tab.id
+                        ? 'bg-primary text-primary-foreground shadow-lg scale-105'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    {activeTab === tab.id && (
+                      <div className="absolute inset-0 bg-gradient-main rounded-xl opacity-90"></div>
+                    )}
+                    <Icon className={`w-5 h-5 relative z-10 transition-transform duration-300 ${activeTab === tab.id ? 'text-white' : ''} group-hover:scale-110`} />
+                    <span className={`relative z-10 ${activeTab === tab.id ? 'text-white' : ''}`}>{tab.label}</span>
+                    {activeTab === tab.id && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full"></div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Tab Content */}
-          {renderTabContent()}
+          {/* Tab Content with Animation */}
+          <div className="animate-fadeIn">
+            {renderTabContent()}
+          </div>
         </div>
       </main>
       <Footer />

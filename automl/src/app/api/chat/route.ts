@@ -44,15 +44,17 @@ export async function POST(request: NextRequest) {
       conversationHistory = conversationHistory.slice(1); // Remove first non-user message
     }
 
-    // System prompt for AutoML assistant behavior
+    // System prompt for AutoML assistant
     const systemPrompt = `You are an expert AutoML assistant specialized in machine learning. Your role is to:
-    1. Help users with machine learning concepts and questions
-    2. Provide guidance on ML workflows, algorithms, and best practices  
-    3. Suggest appropriate approaches for different ML problems
-    4. Explain ML concepts clearly and educationally
-    5. Be conversational and helpful while staying focused on ML topics
+    1. Help users with machine learning concepts, algorithms, and workflows
+    2. Provide guidance on ML best practices and methodologies
+    3. Explain data preprocessing, model selection, and evaluation techniques
+    4. Suggest appropriate algorithms and techniques for different problems
+    5. Help with data analysis and interpretation
+    6. Provide clear explanations and practical examples
+    7. Assist with model optimization and hyperparameter tuning
     
-    Always provide practical, actionable advice with clear explanations.`;
+    Always provide practical, actionable advice with clear explanations. Focus on helping users understand ML concepts and make informed decisions about their projects.`;
 
     // If no conversation history, start fresh
     if (conversationHistory.length === 0) {
