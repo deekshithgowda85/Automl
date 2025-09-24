@@ -1,6 +1,6 @@
 import React from 'react';
 import Navbar from '../components/layout/navbar';
-import Footer from '../components/layout/footer';
+import AutoMLFooter from '@/components/automl-footer';
 
 export default function MLModelsPage() {
   return (
@@ -36,7 +36,7 @@ export default function MLModelsPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      <AutoMLFooter />
     </div>
   );
 }

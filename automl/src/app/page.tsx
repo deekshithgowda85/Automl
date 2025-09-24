@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import Navbar from './components/layout/navbar';
-import Footer from './components/layout/footer';
+import AutoMLFooter from '@/components/automl-footer';
 import Homelanding from '@/components/Homelanding';
 import gsap from 'gsap';
 
@@ -14,10 +15,11 @@ const HomePage = () => {
   const bottomLeftCardRef = useRef<HTMLDivElement>(null);
   const bottomRightCardsRef = useRef<HTMLDivElement>(null);
   const floatingElementsRef = useRef<Array<HTMLDivElement | null>>([]);
+  const router = useRouter();
 
   // Navigation function
   const navigate = (path: string) => {
-    console.log(`Navigating to: ${path}`);
+    router.push(path);
   };
 
   useEffect(() => {
@@ -441,16 +443,17 @@ const HomePage = () => {
           <div className="hero-buttons flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-12 pointer-events-auto w-full md:w-auto px-4">
             <button
               className="w-full md:w-auto bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
-              onClick={() => navigate('/mlmodels')}
+              onClick={() => navigate('/dashboard')}
             >
-              Start Training
+              🚀 Start Training
             </button>
             <button
               className="w-full md:w-auto border-2 border-black hover:bg-black dark:border-white dark:hover:bg-white text-black hover:text-white dark:text-white dark:hover:text-black px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 backdrop-blur-sm"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/datasets')}
             >
-              View Dashboard
+              📊 Datasets
             </button>
+           
           </div>
         </div>
 
@@ -793,7 +796,7 @@ const HomePage = () => {
         </div>
       </div>
       
-      <Footer />
+      <AutoMLFooter />
     </div>
   );
 };

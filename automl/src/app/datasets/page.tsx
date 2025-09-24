@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react';
 import Navbar from '../components/layout/navbar';
-import Footer from '../components/layout/footer';
+import AutoMLFooter from '@/components/automl-footer';
+
+// Utility function to format numbers consistently for hydration
+const formatNumber = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
 
 // Type definitions
 interface Dataset {
@@ -358,7 +363,7 @@ export default function Datasets() {
                     {/* Quick Stats */}
                     <div className="grid grid-cols-3 gap-4 p-3 bg-muted/50 rounded-xl mb-4">
                       <div className="text-center">
-                        <div className="font-bold text-foreground">{dataset.rowsCount.toLocaleString()}</div>
+                        <div className="font-bold text-foreground">{formatNumber(dataset.rowsCount)}</div>
                         <div className="text-xs text-muted-foreground">Rows</div>
                       </div>
                       <div className="text-center">
@@ -382,7 +387,7 @@ export default function Datasets() {
                       </div>
                       <div className="flex items-center gap-1 text-muted-foreground">
                         📥
-                        <span>{dataset.downloadCount.toLocaleString()} downloads</span>
+                        <span>{formatNumber(dataset.downloadCount)} downloads</span>
                       </div>
                     </div>
 
@@ -498,7 +503,7 @@ export default function Datasets() {
           </div>
         </div>
       </main>
-      <Footer />
+      <AutoMLFooter />
     </div>
   );
 }
