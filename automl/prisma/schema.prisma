@@ -116,3 +116,37 @@ enum MessageType {
     USER
     ASSISTANT
 }
+
+model MLModelTemplate {
+    id           String   @id @default(cuid())
+    slug         String   @unique // For URL routing (e.g., "random-forest")
+    name         String
+    author       String
+    description  String
+    shortDesc    String
+    category     String
+    difficulty   String
+    accuracy     Float
+    downloads    String
+    likes        Int
+    lastUpdated  String
+    license      String
+    tags         Json // Array of strings stored as JSON
+    iconName     String
+    isPopular    Boolean
+    gradient     String
+    popularity   Float
+    trainingTime String
+    users        String
+    useCases     Json // Array of strings stored as JSON
+    features     Json // Array of strings stored as JSON
+    advantages   Json // Array of strings stored as JSON
+    howItWorks   Json // Array of strings stored as JSON
+    bestFor      Json // Array of strings stored as JSON
+    parameters   Json // Key-value pairs stored as JSON
+    codeExample  String
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    @@map("ml_model_templates")
+}
