@@ -14,7 +14,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: undefined,
+        elements: {
+          formButtonPrimary: 'bg-primary hover:bg-primary/90 text-primary-foreground',
+          footerActionLink: 'text-primary hover:text-primary/90'
+        }
+      }}
+    >
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased">
           <ThemeProvider

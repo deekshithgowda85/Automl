@@ -54,6 +54,15 @@ function DashboardPage() {
   // Helper variables
   const currentSession = sessions.find(s => s.id === currentSessionId);
 
+  // Helper function for consistent date formatting
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
   // Effects
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -409,7 +418,6 @@ function DashboardPage() {
           
           {/* Profile Icon */}
           <UserButton 
-            afterSignOutUrl="/"
             appearance={{
               elements: {
                 avatarBox: "w-8 h-8 rounded-full border border-border/20 hover:border-border/40 transition-colors cursor-pointer"
@@ -469,7 +477,7 @@ function DashboardPage() {
                     {session.title}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {session.lastUpdated.toLocaleDateString()}
+                    {formatDate(session.lastUpdated)}
                   </div>
                 </div>
                 <button
@@ -608,7 +616,7 @@ function DashboardPage() {
                                 handleModelDownload(lastModelData.encodedCode);
                               }
                             }}
-                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md font-medium transition-colors flex items-center gap-1.5"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs rounded-md font-medium transition-colors flex items-center gap-1.5 border border-border/30"
                           >
                             <span>📥</span>
                             Download Model
@@ -698,7 +706,11 @@ function DashboardPage() {
                         ? 'text-blue-600 bg-blue-100/80 dark:text-blue-400 dark:bg-blue-900/30'
                         : 'text-emerald-600 bg-emerald-100/80 dark:text-emerald-400 dark:bg-emerald-900/30'
                     }`}>
-                      {message.timestamp.toLocaleTimeString()}
+                      {message.timestamp.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
                     </span>
                   </div>
                   <div className="prose prose-sm max-w-none">
@@ -715,7 +727,7 @@ function DashboardPage() {
                               const match = message.content.match(/\[DOWNLOAD_MODEL_BUTTON:([^\]]+)\]/);
                               if (match) handleModelDownload(match[1]);
                             }}
-                            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                            className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 border border-border/30"
                           >
                             📥 Download Model (.pkl)
                           </button>
