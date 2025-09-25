@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import Navbar from '../components/layout/navbar';
 import AutoMLFooter from '@/components/automl-footer';
 
@@ -378,82 +379,15 @@ export default function Datasets() {
                       </div>
                     </div>
 
-                    {/* Rating and Downloads */}
-                    <div className="flex items-center justify-between text-sm mb-4">
-                      <div className="flex items-center gap-1 text-yellow-500">
-                        ⭐
-                        <span className="text-foreground font-medium">{dataset.rating}</span>
-                        <span className="text-muted-foreground">rating</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        📥
-                        <span>{formatNumber(dataset.downloadCount)} downloads</span>
-                      </div>
-                    </div>
-
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {dataset.tags.slice(0, 4).map((tag, tagIndex) => (
-                        <span
-                          key={`${dataset.id}-tag-${tagIndex}`}
-                          className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {dataset.tags.length > 4 && (
-                        <span className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                          +{dataset.tags.length - 4} more
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Featured and Difficulty Badges */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {dataset.featured && (
-                        <span className="inline-flex items-center rounded-full bg-gradient-warning px-2.5 py-1 text-xs font-medium text-white">
-                          ⭐ Featured
-                        </span>
-                      )}
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-                        dataset.difficulty === 'beginner' 
-                          ? 'bg-gradient-success text-white'
-                          : dataset.difficulty === 'intermediate'
-                          ? 'bg-gradient-warning text-white'
-                          : 'bg-gradient-accent text-white'
-                      }`}>
-                        {dataset.difficulty === 'beginner' && '🟢 Beginner'}
-                        {dataset.difficulty === 'intermediate' && '🟡 Intermediate'}
-                        {dataset.difficulty === 'advanced' && '🔴 Advanced'}
-                      </span>
-                    </div>
-
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-2">
-                      <a
-                        href={`/datasets/${dataset.slug}`}
+                      <Link
+                        href={`/datasets/${dataset.id}`}
                         className="inline-flex flex-1 items-center justify-center rounded-xl bg-gradient-main text-white px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:shadow-lg btn-theme"
                       >
                         View Details
-                      </a>
+                      </Link>
                       
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handlePreview(dataset)}
-                          className="inline-flex items-center justify-center rounded-xl border border-border bg-card hover:bg-accent px-3 py-2.5 text-sm font-medium transition-all duration-300"
-                          title="Quick Preview"
-                        >
-                          👁️
-                        </button>
-                        
-                        <button
-                          onClick={() => handleAnalyze(dataset)}
-                          className="inline-flex items-center justify-center rounded-xl bg-gradient-accent text-white px-3 py-2.5 text-sm font-medium transition-all duration-300 shadow-lg hover:shadow-xl btn-theme"
-                          title="Start Analysis"
-                        >
-                          ⚡
-                        </button>
-                      </div>
                     </div>
                   </div>
                 </div>

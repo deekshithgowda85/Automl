@@ -6,17 +6,23 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     console.log('Profile API called');
+    
+    // Test database connection first
+    await prisma.$connect();
+    console.log('Database connected successfully');
+    
     const { userId } = await auth();
     
     console.log('User ID from auth:', userId);
     
     if (!userId) {
-      console.log('No user ID found');
+      console.log('No user ID found - user not authenticated');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get user data with related records
     console.log('Looking for user with clerkId:', userId);
+    
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       include: {
@@ -38,7 +44,7 @@ export async function GET() {
       },
     });
 
-    console.log('User found:', user ? 'Yes' : 'No');
+    console.log('User query result:', user ? `Found user with ID: ${user.id}` : 'No user found');
     
     if (!user) {
       // If user doesn't exist, create one
@@ -177,8 +183,21 @@ export async function GET() {
 
     return NextResponse.json(profileData);
   } catch (error) {
-    console.error('Error fetching user profile:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error fetching user profile:');
+    console.error('Error name:', (error as Error).name);
+    console.error('Error message:', (error as Error).message);
+    console.error('Error stack:', (error as Error).stack);
+    
+    // Check if it's a Prisma-specific error
+    if (error && typeof error === 'object' && 'code' in error) {
+      console.error('Prisma error code:', (error as { code: string }).code);
+      console.error('Prisma error meta:', (error as { meta?: unknown }).meta);
+    }
+    
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+    }, { status: 500 });
   }
 }
 

@@ -128,7 +128,6 @@ const Navbar = () => {
                             avatarBox: "w-8 h-8"
                           }
                         }}
-                        afterSignOutUrl="/"
                       />
                     </div>
                   </div>

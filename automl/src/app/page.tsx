@@ -113,10 +113,15 @@ const HomePage = () => {
       // Animate floating elements
       floatingElementsRef.current.forEach((el, index) => {
         if (el) {
+          // Use deterministic values based on index to avoid hydration mismatch
+          const yOffset = ((index * 31 + 17) % 40) + 20; // 20-60
+          const xOffset = ((index * 23 + 7) % 30) - 15; // -15 to 15
+          const duration = ((index * 19 + 11) % 3) + 2; // 2-5
+          
           gsap.to(el, {
-            y: `+=${Math.random() * 40 + 20}`,
-            x: `+=${Math.random() * 30 - 15}`,
-            duration: Math.random() * 3 + 2,
+            y: `+=${yOffset}`,
+            x: `+=${xOffset}`,
+            duration: duration,
             ease: "power1.inOut",
             yoyo: true,
             repeat: -1,
@@ -238,13 +243,18 @@ const HomePage = () => {
               <div className="h-40 bg-muted rounded-lg mb-6 relative overflow-hidden border border-border">
                 <div className="absolute inset-0" style={{ background: 'var(--gradient-card)' }}></div>
                 <div className="absolute inset-0 grid grid-cols-8 grid-rows-6 gap-1 p-2">
-                  {[...Array(48)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`bg-muted rounded-sm ${Math.random() > 0.8 ? 'animate-pulse bg-foreground/20' : ''}`}
-                      style={{animationDelay: `${Math.random() * 2}s`}}
-                    ></div>
-                  ))}
+                  {[...Array(48)].map((_, i) => {
+                    // Use deterministic values based on index to avoid hydration mismatch
+                    const shouldAnimate = (i * 17 + 13) % 5 === 0; // Deterministic "random"
+                    const delay = ((i * 47 + 23) % 200) / 100; // Deterministic delay 0-2s
+                    return (
+                      <div 
+                        key={i} 
+                        className={`bg-muted rounded-sm ${shouldAnimate ? 'animate-pulse bg-foreground/20' : ''}`}
+                        style={{animationDelay: `${delay}s`}}
+                      ></div>
+                    );
+                  })}
                 </div>
                 <div className="absolute bottom-2 left-2 text-xs text-muted-foreground">
                   Neural Network Training
