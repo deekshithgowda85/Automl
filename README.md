@@ -1,6 +1,6 @@
 # 🤖 AutoML Platform - Intelligent Machine Learning Model Builder
 
-![AutoML Banner](public/banner.jpg)
+![AutoML Banner](/banner.png)
 
 > **Democratizing Machine Learning through Automated Model Development and Deployment**
 
