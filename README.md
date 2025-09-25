@@ -23,11 +23,7 @@
 
 ---
 
-## 📺 Demo Video
 
-[![AutoML Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://youtu.be/YOUR_VIDEO_ID)
-
-**Click the image above to watch the full demo on YouTube!**
 
 ---
 
