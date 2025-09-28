@@ -1,165 +1,57 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '../components/layout/navbar';
 import AutoMLFooter from '@/components/automl-footer';
 
-// Utility function to format numbers consistently for hydration
-const formatNumber = (num: number): string => {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-};
-
-// Type definitions
-interface Dataset {
+// Type definitions for Kaggle datasets
+interface KaggleDataset {
   id: string;
   title: string;
-  slug: string;
   description: string;
-  shortDesc?: string;
-  domain: string;
-  difficulty: string;
-  taskType: string;
-  tags: string[];
-  rowsCount: number;
-  columnsCount: number;
-  sizeMb: number;
-  downloadCount: number;
+  owner: string;
+  downloads: string;
   rating: number;
-  featured: boolean;
-  targetColumn?: string;
+  tags: string[];
+  size: string;
+  lastUpdated: string;
+  isFeatured: boolean;
+  fileCount: number;
+  taskType: string;
+  difficulty: string;
+  domain: string;
 }
 
-// Mock data for demonstration
-const mockDatasets = [
-  {
-    id: '1',
-    title: 'Titanic Survival Prediction',
-    slug: 'titanic-survival',
-    description: 'Classic beginner dataset for binary classification. Predict passenger survival based on demographics and ticket information.',
-    shortDesc: 'Classic beginner dataset for binary classification prediction',
-    domain: 'ml-basics',
-    difficulty: 'beginner',
-    taskType: 'classification',
-    tags: ['classification', 'beginner', 'historic', 'binary'],
-    rowsCount: 891,
-    columnsCount: 12,
-    sizeMb: 0.06,
-    downloadCount: 15420,
-    rating: 4.8,
-    featured: true,
-    targetColumn: 'Survived',
-  },
-  {
-    id: '2',
-    title: 'House Prices Advanced',
-    slug: 'house-prices-advanced',
-    description: 'Predict house prices using 79 explanatory variables. Great for feature engineering practice.',
-    shortDesc: 'Advanced regression dataset for house price prediction',
-    domain: 'real-estate',
-    difficulty: 'intermediate',
-    taskType: 'regression',
-    tags: ['regression', 'real-estate', 'feature-engineering', 'advanced'],
-    rowsCount: 1460,
-    columnsCount: 81,
-    sizeMb: 0.46,
-    downloadCount: 12890,
-    rating: 4.7,
-    featured: true,
-    targetColumn: 'SalePrice',
-  },
-  {
-    id: '3',
-    title: 'Customer Churn Analysis',
-    slug: 'customer-churn-analysis',
-    description: 'Telecom customer churn prediction. Identify customers likely to cancel their subscription.',
-    shortDesc: 'Business analytics dataset for customer retention prediction',
-    domain: 'business',
-    difficulty: 'intermediate',
-    taskType: 'classification',
-    tags: ['classification', 'business', 'customer-analytics', 'churn'],
-    rowsCount: 7043,
-    columnsCount: 21,
-    sizeMb: 0.96,
-    downloadCount: 8750,
-    rating: 4.6,
-    featured: false,
-    targetColumn: 'Churn',
-  },
-  {
-    id: '4',
-    title: 'Credit Card Fraud Detection',
-    slug: 'credit-fraud-detection',
-    description: 'Highly imbalanced dataset for fraud detection. Advanced techniques required.',
-    shortDesc: 'Advanced fraud detection with imbalanced classes',
-    domain: 'finance',
-    difficulty: 'advanced',
-    taskType: 'classification',
-    tags: ['fraud-detection', 'imbalanced', 'finance', 'security'],
-    rowsCount: 284807,
-    columnsCount: 31,
-    sizeMb: 150.83,
-    downloadCount: 5420,
-    rating: 4.9,
-    featured: true,
-    targetColumn: 'Class',
-  },
-  {
-    id: '5',
-    title: 'Wine Quality Assessment',
-    slug: 'wine-quality-assessment',
-    description: 'Predict wine quality based on physicochemical properties. Multi-class classification problem.',
-    shortDesc: 'Multi-class classification for wine quality prediction',
-    domain: 'lifestyle',
-    difficulty: 'beginner',
-    taskType: 'classification',
-    tags: ['classification', 'multiclass', 'chemistry', 'food'],
-    rowsCount: 4898,
-    columnsCount: 12,
-    sizeMb: 0.34,
-    downloadCount: 3210,
-    rating: 4.5,
-    featured: false,
-    targetColumn: 'quality',
-  },
-  {
-    id: '6',
-    title: 'Stock Market Prediction',
-    slug: 'stock-market-prediction',
-    description: 'Time series analysis of stock market data. Predict future stock prices.',
-    shortDesc: 'Time series dataset for financial market prediction',
-    domain: 'finance',
-    difficulty: 'advanced',
-    taskType: 'time-series',
-    tags: ['time-series', 'finance', 'prediction', 'trading'],
-    rowsCount: 25600,
-    columnsCount: 15,
-    sizeMb: 5.2,
-    downloadCount: 7890,
-    rating: 4.4,
-    featured: false,
-    targetColumn: 'Close',
-  }
-];
+interface KaggleResponse {
+  datasets: KaggleDataset[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+  error?: string;
+}
 
 const domains = [
-  { value: 'All', label: 'All Domains', emoji: '🗃' },
-  { value: 'ml-basics', label: 'ML Basics', emoji: '🧠' },
+  { value: 'all', label: 'All Domains', emoji: '🗃' },
+  { value: 'ai-ml', label: 'AI & ML', emoji: '🧠' },
   { value: 'finance', label: 'Finance', emoji: '💰' },
   { value: 'business', label: 'Business', emoji: '👥' },
   { value: 'real-estate', label: 'Real Estate', emoji: '🏠' },
-  { value: 'lifestyle', label: 'Lifestyle', emoji: '✨' }
+  { value: 'healthcare', label: 'Healthcare', emoji: '🏥' },
+  { value: 'entertainment', label: 'Entertainment', emoji: '🎬' },
+  { value: 'general', label: 'General', emoji: '📊' }
 ];
 
 const difficulties = [
-  { value: 'All', label: 'All Levels' },
+  { value: 'all', label: 'All Levels' },
   { value: 'beginner', label: 'Beginner' },
   { value: 'intermediate', label: 'Intermediate' },
   { value: 'advanced', label: 'Advanced' }
 ];
 
 const taskTypes = [
-  { value: 'All', label: 'All Tasks' },
+  { value: 'all', label: 'All Tasks' },
   { value: 'classification', label: 'Classification' },
   { value: 'regression', label: 'Regression' },
   { value: 'time-series', label: 'Time Series' },
@@ -167,31 +59,82 @@ const taskTypes = [
 ];
 
 export default function Datasets() {
-  const [selectedDomain, setSelectedDomain] = useState('All');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('All');
-  const [selectedTaskType, setSelectedTaskType] = useState('All');
+  const [datasets, setDatasets] = useState<KaggleDataset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedDomain, setSelectedDomain] = useState('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+  const [selectedTaskType, setSelectedTaskType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Filter datasets based on selected filters
-  const filteredDatasets = mockDatasets.filter((dataset) => {
-    const domainMatch = selectedDomain === 'All' || dataset.domain === selectedDomain;
-    const difficultyMatch = selectedDifficulty === 'All' || dataset.difficulty === selectedDifficulty;
-    const taskTypeMatch = selectedTaskType === 'All' || dataset.taskType === selectedTaskType;
-    const searchMatch = searchQuery === '' || 
-      dataset.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dataset.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dataset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Fetch datasets from Kaggle API
+  const fetchDatasets = async (searchTerm: string = '', pageNum: number = 1, reset: boolean = true) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        search: searchTerm,
+        page: pageNum.toString(),
+        pageSize: '20'
+      });
 
-    return domainMatch && difficultyMatch && taskTypeMatch && searchMatch;
-  });
+      const response = await fetch(`/api/datasets/kaggle?${params}`);
+      const data: KaggleResponse = await response.json();
 
-  const handlePreview = (dataset: Dataset) => {
-    console.log('Preview dataset:', dataset.id);
+      if (reset) {
+        setDatasets(data.datasets);
+      } else {
+        setDatasets(prev => [...prev, ...data.datasets]);
+      }
+      
+      setHasMore(data.hasMore);
+      setError(data.error || null);
+    } catch (err) {
+      setError('Failed to fetch datasets from Kaggle');
+      console.error('Error fetching datasets:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAnalyze = (dataset: Dataset) => {
-    console.log('Analyze dataset:', dataset.id);
+  // Initial load
+  useEffect(() => {
+    fetchDatasets();
+  }, []);
+
+  // Search handler with debounce
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setPage(1);
+      fetchDatasets(searchQuery, 1, true);
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
+  // Load more datasets
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchDatasets(searchQuery, nextPage, false);
+  };
+
+  // Filter datasets based on selected filters
+  const filteredDatasets = datasets.filter((dataset) => {
+    const domainMatch = selectedDomain === 'all' || dataset.domain === selectedDomain;
+    const difficultyMatch = selectedDifficulty === 'all' || dataset.difficulty === selectedDifficulty;
+    const taskTypeMatch = selectedTaskType === 'all' || dataset.taskType === selectedTaskType;
+
+    return domainMatch && difficultyMatch && taskTypeMatch;
+  });
+
+  const clearFilters = () => {
+    setSelectedDomain('all');
+    setSelectedDifficulty('all');
+    setSelectedTaskType('all');
+    setSearchQuery('');
   };
 
   return (
@@ -202,12 +145,17 @@ export default function Datasets() {
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold text-gradient mb-4">
-              Dataset Gallery
+              Kaggle Dataset Gallery
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Curated collection of high-quality datasets ready for your machine learning projects. 
-              From beginner-friendly to advanced challenges.
+              Explore real-world datasets from Kaggle community. Perfect for practicing machine learning 
+              and building your data science portfolio.
             </p>
+            {error && (
+              <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-600">
+                ⚠️ {error}
+              </div>
+            )}
           </div>
 
           {/* Search Bar */}
@@ -218,7 +166,7 @@ export default function Datasets() {
               </div>
               <input
                 type="text"
-                placeholder="Search datasets, tags, or descriptions..."
+                placeholder="Search Kaggle datasets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 shadow-professional glass-effect"
@@ -240,11 +188,6 @@ export default function Datasets() {
               >
                 <span>{domain.emoji}</span>
                 {domain.label}
-                {domain.value !== 'All' && (
-                  <span className="ml-1 text-xs opacity-70">
-                    ({mockDatasets.filter((d) => d.domain === domain.value).length})
-                  </span>
-                )}
               </button>
             ))}
           </div>
@@ -256,7 +199,7 @@ export default function Datasets() {
               className="flex items-center gap-2 px-4 py-2 bg-card text-foreground hover:bg-accent border border-border rounded-xl text-sm font-medium transition-all duration-300 shadow-professional"
             >
               ⚙️ Filters
-              {(selectedDifficulty !== 'All' || selectedTaskType !== 'All') && (
+              {(selectedDifficulty !== 'all' || selectedTaskType !== 'all') && (
                 <span className="ml-1 bg-primary text-primary-foreground rounded-full w-2 h-2"></span>
               )}
             </button>
@@ -307,13 +250,10 @@ export default function Datasets() {
               </div>
 
               {/* Clear Filters */}
-              {(selectedDifficulty !== 'All' || selectedTaskType !== 'All') && (
+              {(selectedDifficulty !== 'all' || selectedTaskType !== 'all' || searchQuery !== '') && (
                 <div className="mt-4 pt-4 border-t border-border">
                   <button
-                    onClick={() => {
-                      setSelectedDifficulty('All');
-                      setSelectedTaskType('All');
-                    }}
+                    onClick={clearFilters}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Clear all filters
@@ -326,19 +266,34 @@ export default function Datasets() {
           {/* Results count */}
           <div className="text-center mb-8">
             <p className="text-muted-foreground">
-              Showing {filteredDatasets.length} of {mockDatasets.length} datasets
+              Showing {filteredDatasets.length} datasets from Kaggle
             </p>
           </div>
+
+          {/* Loading state */}
+          {loading && page === 1 && (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <p className="mt-2 text-muted-foreground">Loading datasets from Kaggle...</p>
+            </div>
+          )}
 
           {/* Datasets Grid */}
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {filteredDatasets.length > 0 ? (
               filteredDatasets.map((dataset, index) => (
                 <div
-                  key={dataset.id}
+                  key={`${dataset.id}-${index}`}
                   className="group relative overflow-hidden rounded-2xl border border-border bg-card glass-effect shadow-professional transition-all duration-300 hover:shadow-lg hover:scale-[1.02] animate-fadeIn"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
+                  {/* Featured badge */}
+                  {dataset.isFeatured && (
+                    <div className="absolute top-3 right-3 z-10 bg-gradient-main text-white text-xs px-2 py-1 rounded-full">
+                      ⭐ Featured
+                    </div>
+                  )}
+
                   {/* Dataset Header */}
                   <div className="p-6 pb-4">
                     {/* Domain and Task Type */}
@@ -352,29 +307,49 @@ export default function Datasets() {
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xl font-bold leading-tight text-foreground group-hover:text-gradient transition-all duration-300 mb-2">
+                    <h3 className="text-xl font-bold leading-tight text-foreground group-hover:text-gradient transition-all duration-300 mb-2 line-clamp-2">
                       {dataset.title}
                     </h3>
                     
-                    {/* Description */}
-                    <p className="text-muted-foreground line-clamp-3 leading-relaxed mb-4">
-                      {dataset.shortDesc || dataset.description}
+                    {/* Owner */}
+                    <p className="text-sm text-muted-foreground mb-2">
+                      by <span className="font-medium">{dataset.owner}</span>
                     </p>
+                    
+                    {/* Description */}
+                    <p className="text-muted-foreground line-clamp-3 leading-relaxed mb-4 text-sm">
+                      {dataset.description}
+                    </p>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {dataset.tags.slice(0, 3).map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className="text-xs bg-muted/50 text-muted-foreground px-2 py-1 rounded-md"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {dataset.tags.length > 3 && (
+                        <span className="text-xs text-muted-foreground px-2 py-1">
+                          +{dataset.tags.length - 3} more
+                        </span>
+                      )}
+                    </div>
 
                     {/* Quick Stats */}
                     <div className="grid grid-cols-3 gap-4 p-3 bg-muted/50 rounded-xl mb-4">
                       <div className="text-center">
-                        <div className="font-bold text-foreground">{formatNumber(dataset.rowsCount)}</div>
-                        <div className="text-xs text-muted-foreground">Rows</div>
+                        <div className="font-bold text-foreground text-sm">{dataset.downloads}</div>
+                        <div className="text-xs text-muted-foreground">Downloads</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-bold text-foreground">{dataset.columnsCount}</div>
-                        <div className="text-xs text-muted-foreground">Columns</div>
+                        <div className="font-bold text-foreground text-sm">{dataset.rating.toFixed(1)}</div>
+                        <div className="text-xs text-muted-foreground">Rating</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-bold text-foreground">
-                          {dataset.sizeMb < 1 ? `${(dataset.sizeMb * 1000).toFixed(0)}KB` : `${dataset.sizeMb.toFixed(1)}MB`}
-                        </div>
+                        <div className="font-bold text-foreground text-sm">{dataset.size}</div>
                         <div className="text-xs text-muted-foreground">Size</div>
                       </div>
                     </div>
@@ -386,52 +361,71 @@ export default function Datasets() {
                         className="inline-flex flex-1 items-center justify-center rounded-xl bg-gradient-main text-white px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:shadow-lg btn-theme"
                       >
                         View Details
+                        <span className="ml-2">→</span>
                       </Link>
-                      
                     </div>
                   </div>
                 </div>
               ))
-            ) : (
+            ) : !loading ? (
               <div className="col-span-full text-center py-16">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold mb-2 text-foreground">No datasets found</h3>
                 <p className="text-muted-foreground mb-4">
-                  Try adjusting your filters or search terms, or browse all datasets.
+                  Try adjusting your filters or search terms.
                 </p>
                 <button
-                  onClick={() => {
-                    setSelectedDomain('All');
-                    setSelectedDifficulty('All');
-                    setSelectedTaskType('All');
-                    setSearchQuery('');
-                  }}
+                  onClick={clearFilters}
                   className="inline-flex items-center rounded-xl bg-gradient-main text-white px-4 py-2 text-sm font-medium transition-all duration-300 hover:shadow-lg btn-theme"
                 >
-                  Show All Datasets
+                  Clear Filters
                 </button>
               </div>
-            )}
+            ) : null}
           </div>
+
+          {/* Load More Button */}
+          {hasMore && filteredDatasets.length > 0 && (
+            <div className="text-center mt-12">
+              <button
+                onClick={loadMore}
+                disabled={loading}
+                className="inline-flex items-center justify-center rounded-xl bg-card text-foreground border border-border hover:bg-accent px-6 py-3 text-sm font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                    Loading more...
+                  </>
+                ) : (
+                  <>
+                    Load More Datasets
+                    <span className="ml-2">↓</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
 
           {/* Call to Action */}
           <div className="text-center mt-16 p-8 bg-gradient-card glass-effect rounded-2xl border border-border shadow-professional">
-            <h2 className="text-2xl font-bold mb-4 text-gradient">Ready to Build Something Amazing?</h2>
+            <h2 className="text-2xl font-bold mb-4 text-gradient">Start Your ML Journey</h2>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Pick a dataset that interests you and let our platform guide you through the entire machine learning workflow.
+              Found an interesting dataset? Download it from Kaggle and upload it to our platform to start 
+              building ML models with our automated pipeline.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/dashboard"
                 className="inline-flex items-center justify-center rounded-xl bg-gradient-main text-white px-6 py-3 text-sm font-semibold transition-all duration-300 hover:shadow-lg btn-theme"
               >
-                🚀 Start Building
+                🚀 Upload Dataset
               </a>
               <a
                 href="/profile"
                 className="inline-flex items-center justify-center rounded-xl border border-border bg-card text-foreground hover:bg-accent px-6 py-3 text-sm font-medium transition-all duration-300"
               >
-                📚 View Profile
+                📚 View Models
               </a>
             </div>
           </div>

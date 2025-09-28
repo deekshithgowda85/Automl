@@ -1,404 +1,427 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, Star, Download, Eye, CloudDownload } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useParams } from 'next/navigation';
+import { ArrowLeft, Loader2, Search } from 'lucide-react';
+import Link from 'next/link';
 import Navbar from '../../components/layout/navbar';
 import AutoMLFooter from '@/components/automl-footer';
-
-// Define proper TypeScript interfaces
-interface Dataset {
+import DatasetDetailView from '@/components/DatasetDetailView';
+// Define TypeScript interfaces matching Kaggle API
+interface KaggleDataset {
   id: string;
   title: string;
   description: string;
-  domain: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  taskType: 'classification' | 'regression' | 'time-series';
-  tags: string[];
-  size: string;
+  owner: string;
   downloads: string;
   rating: number;
-  rows: number;
-  columns: number;
+  tags: string[];
+  size: string;
+  lastUpdated: string;
+  isFeatured: boolean;
+  fileCount: number;
+  taskType: string;
+  difficulty: string;
+  domain: string;
 }
 
-interface Domain {
-  value: string;
-  label: string;
-  emoji: string;
+interface KaggleResponse {
+  datasets: KaggleDataset[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+  error?: string;
 }
 
-// Real Kaggle datasets with proper metadata
-const kaggleDatasets: Dataset[] = [
-  {
-    id: 'mosabdelghany/medical-insurance-cost-dataset',
-    title: 'Medical Insurance Cost Prediction',
-    description: 'Predict medical insurance costs based on demographic factors like age, BMI, smoking status, and region.',
-    domain: 'healthcare',
-    difficulty: 'beginner',
-    taskType: 'regression',
-    tags: ['healthcare', 'insurance', 'regression', 'medical'],
-    size: '15KB',
-    downloads: '15k+',
-    rating: 4.5,
-    rows: 1338,
-    columns: 7
-  },
-  {
-    id: 'karthickveerakumar/salary-data-simple-linear-regression',
-    title: 'Salary Data - Simple Linear Regression',
-    description: 'Perfect dataset for simple linear regression practice with years of experience vs salary data.',
-    domain: 'business',
-    difficulty: 'beginner',
-    taskType: 'regression',
-    tags: ['salary', 'regression', 'linear', 'business'],
-    size: '1KB',
-    downloads: '25k+',
-    rating: 4.3,
-    rows: 30,
-    columns: 2
-  },
-  {
-    id: 'uciml/iris',
-    title: 'Iris Flower Dataset',
-    description: 'Classic dataset for classification with measurements of iris flowers from three species.',
-    domain: 'biology',
-    difficulty: 'beginner',
-    taskType: 'classification',
-    tags: ['classification', 'biology', 'flowers', 'multiclass'],
-    size: '4KB',
-    downloads: '150k+',
-    rating: 4.8,
-    rows: 150,
-    columns: 5
-  },
-  {
-    id: 'lava18/google-play-store-apps',
-    title: 'Google Play Store Apps',
-    description: 'Analyze Android app performance, ratings, and categories from the Google Play Store.',
-    domain: 'business',
-    difficulty: 'intermediate',
-    taskType: 'classification',
-    tags: ['apps', 'business', 'ratings', 'android'],
-    size: '1MB',
-    downloads: '45k+',
-    rating: 4.4,
-    rows: 10000,
-    columns: 13
-  },
-  {
-    id: 'zynicide/wine-reviews',
-    title: 'Wine Reviews Dataset',
-    description: 'Large collection of wine reviews with ratings, descriptions, and price information.',
-    domain: 'food',
-    difficulty: 'intermediate',
-    taskType: 'regression',
-    tags: ['wine', 'reviews', 'regression', 'food'],
-    size: '25MB',
-    downloads: '35k+',
-    rating: 4.6,
-    rows: 150000,
-    columns: 13
-  }
-];
-
-const domains: Domain[] = [
-  { value: 'All', label: 'All Domains', emoji: '🗃' },
-  { value: 'healthcare', label: 'Healthcare', emoji: '🏥' },
-  { value: 'business', label: 'Business', emoji: '💼' },
-  { value: 'biology', label: 'Biology', emoji: '🧬' },
-  { value: 'food', label: 'Food', emoji: '🍕' },
-  { value: 'finance', label: 'Finance', emoji: '💰' }
-];
-
-export default function Datasets() {
-  const [selectedDomain, setSelectedDomain] = useState<string>('All');
+export default function DatasetCategory() {
+  const params = useParams();
+  const [datasets, setDatasets] = useState<KaggleDataset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [isDownloading, setIsDownloading] = useState<Record<string, boolean>>({});
-  const datasets = kaggleDatasets;
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // Filter datasets
-  const filteredDatasets = datasets.filter((dataset) => {
-    const domainMatch = selectedDomain === 'All' || dataset.domain === selectedDomain;
-    const searchMatch = searchQuery === '' || 
-      dataset.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dataset.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dataset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+  const [dataset, setDataset] = useState<KaggleDataset | null>(null);
 
-    return domainMatch && searchMatch;
-  });
+  // Extract category from slug with memoization
+  const slug = useMemo(() => 
+    Array.isArray(params?.slug) ? params.slug : [], 
+    [params?.slug]
+  );
+  const category = useMemo(() => slug[0] || 'all', [slug]);
 
-  const handleDownload = async (dataset: Dataset) => {
-    setIsDownloading(prev => ({ ...prev, [dataset.id]: true }));
-    
+  // Check if this looks like a dataset detail URL (2 segments that look like owner/dataset-name)
+  const isDetailURL = useMemo(() => {
+    return slug.length === 2 && slug[1].length > 10; // Assuming dataset names are longer
+  }, [slug]);
+
+  // Fetch individual dataset for detail view
+  const fetchDataset = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      // For demo purposes, we'll create a realistic dataset based on the type
-      // In production, you'd use the actual Kaggle API with authentication
-      await downloadRealisticDataset(dataset);
-      
-    } catch (error) {
-      console.error('Download failed:', error);
-      alert('Download failed. Please visit Kaggle directly to download this dataset.');
+      const fullId = slug.join('/');
+      const response = await fetch(`/api/datasets/kaggle?page=1&pageSize=100`);
+      const data = await response.json();
+      const found = data.datasets.find((d: KaggleDataset) => d.id === fullId);
+      if (found) {
+        setDataset(found);
+      } else {
+        setError('Dataset not found.');
+      }
+    } catch {
+      setError('Failed to fetch dataset from Kaggle.');
     } finally {
-      setIsDownloading(prev => ({ ...prev, [dataset.id]: false }));
+      setLoading(false);
     }
+  }, [slug]);
+
+  // Category display names
+  const getCategoryDisplayName = (cat: string) => {
+    const categories: Record<string, string> = {
+      'ai-ml': 'AI & Machine Learning',
+      'computer-vision': 'Computer Vision',
+      'nlp': 'Natural Language Processing',
+      'finance': 'Finance',
+      'healthcare': 'Healthcare',
+      'real-estate': 'Real Estate',
+      'business': 'Business & Marketing',
+      'entertainment': 'Entertainment',
+      'sports': 'Sports',
+      'education': 'Education',
+      'government': 'Government',
+      'environment': 'Environment',
+      'all': 'All Categories'
+    };
+    return categories[cat] || decodeURIComponent(cat).replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const downloadRealisticDataset = async (dataset: Dataset) => {
-    // Generate realistic data based on dataset type
-    let csvContent = '';
+  // Check if this is a known category
+  const isKnownCategory = (cat: string) => {
+    const categories = ['ai-ml', 'computer-vision', 'nlp', 'finance', 'healthcare', 'real-estate', 'business', 'entertainment', 'sports', 'education', 'government', 'environment', 'all'];
+    return categories.includes(cat);
+  };
+
+  // Fetch datasets from Kaggle API
+  const fetchDatasets = useCallback(async (searchTerm: string = '', pageNum: number = 1, reset: boolean = true) => {
+    if (!reset && !hasMore) return; // Don't fetch if no more data
     
-    if (dataset.id.includes('medical-insurance')) {
-      csvContent = generateMedicalInsuranceData();
-    } else if (dataset.id.includes('salary')) {
-      csvContent = generateSalaryData();
-    } else if (dataset.id.includes('iris')) {
-      csvContent = generateIrisData();
-    } else if (dataset.id.includes('google-play')) {
-      csvContent = generatePlayStoreData();
-    } else if (dataset.id.includes('wine')) {
-      csvContent = generateWineData();
+    setLoading(true);
+    try {
+      // If no explicit search term and category isn't known, treat category as search term
+      const actualSearchTerm = searchTerm || (isKnownCategory(category) ? (category === 'all' ? '' : category) : decodeURIComponent(category));
+      
+      const searchParams = new URLSearchParams({
+        search: actualSearchTerm,
+        page: pageNum.toString(),
+        pageSize: '20'
+      });
+
+      console.log('Fetching datasets with search:', actualSearchTerm);
+      const response = await fetch(`/api/datasets/kaggle?${searchParams}`);
+      const data: KaggleResponse = await response.json();
+      console.log('Received data:', data);
+
+      if (reset) {
+        setDatasets(data.datasets);
+        setTotalCount(data.total);
+      } else {
+        setDatasets(prev => [...prev, ...data.datasets]);
+      }
+      
+      setHasMore(data.hasMore);
+      setError(data.error || null);
+    } catch {
+      setError('Failed to fetch datasets from Kaggle');
+    } finally {
+      setLoading(false);
+    }
+  }, [category, hasMore]);
+
+  // Initial load - either fetch dataset details or category datasets
+  useEffect(() => {
+    setPage(1);
+    if (isDetailURL) {
+      fetchDataset();
     } else {
-      csvContent = generateGenericData();
+      fetchDatasets();
     }
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${dataset.title.replace(/\s+/g, '-').toLowerCase()}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  };
+  }, [category, isDetailURL, fetchDataset, fetchDatasets]);
 
-  // Realistic data generators
-  const generateMedicalInsuranceData = (): string => {
-    let csv = 'age,sex,bmi,children,smoker,region,charges\n';
-    const regions = ['southwest', 'southeast', 'northwest', 'northeast'];
-    
-    for (let i = 0; i < 1338; i++) {
-      const age = Math.floor(Math.random() * 47) + 18;
-      const sex = Math.random() > 0.5 ? 'male' : 'female';
-      const bmi = (Math.random() * 30 + 15).toFixed(1);
-      const children = Math.floor(Math.random() * 6);
-      const smoker = Math.random() > 0.8 ? 'yes' : 'no';
-      const region = regions[Math.floor(Math.random() * regions.length)];
-      const charges = (1000 + age * 100 + parseFloat(bmi) * 50 + children * 200 + (smoker === 'yes' ? 5000 : 0)).toFixed(2);
-      
-      csv += `${age},${sex},${bmi},${children},${smoker},${region},${charges}\n`;
-    }
-    return csv;
-  };
+  // Search handler with debounce
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setPage(1);
+      fetchDatasets(searchQuery, 1, true);
+    }, 300);
 
-  const generateSalaryData = (): string => {
-    let csv = 'YearsExperience,Salary\n';
-    for (let i = 1; i <= 30; i++) {
-      const years = (i * 0.5).toFixed(1);
-      const salary = (30000 + parseFloat(years) * 8000 + Math.random() * 10000).toFixed(2);
-      csv += `${years},${salary}\n`;
-    }
-    return csv;
-  };
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, fetchDatasets]);
 
-  const generateIrisData = (): string => {
-    let csv = 'sepal_length,sepal_width,petal_length,petal_width,species\n';
-    const species = ['setosa', 'versicolor', 'virginica'];
-    
-    for (let i = 0; i < 150; i++) {
-      const speciesType = species[Math.floor(i / 50)];
-      const sepalLength = (4 + Math.random() * 3.5).toFixed(1);
-      const sepalWidth = (2 + Math.random() * 2.5).toFixed(1);
-      const petalLength = (1 + Math.random() * 5).toFixed(1);
-      const petalWidth = (0.1 + Math.random() * 2).toFixed(1);
-      
-      csv += `${sepalLength},${sepalWidth},${petalLength},${petalWidth},${speciesType}\n`;
-    }
-    return csv;
-  };
-
-  const generatePlayStoreData = (): string => {
-    let csv = 'App,Category,Rating,Reviews,Size,Installs,Type,Price,Content_Rating,Genres\n';
-    const categories = ['ART_AND_DESIGN', 'AUTO_AND_VEHICLES', 'BEAUTY', 'BOOKS_AND_REFERENCE', 'BUSINESS'];
-    
-    for (let i = 0; i < 100; i++) {
-      const app = `App_${i + 1}`;
-      const category = categories[Math.floor(Math.random() * categories.length)];
-      const rating = (1 + Math.random() * 4).toFixed(1);
-      const reviews = Math.floor(Math.random() * 1000000);
-      const size = `${Math.floor(Math.random() * 100)}M`;
-      const installs = `${Math.floor(Math.random() * 10000000) + 1000}+`;
-      const type = Math.random() > 0.2 ? 'Free' : 'Paid';
-      const price = type === 'Paid' ? (Math.random() * 10).toFixed(2) : '0';
-      const contentRating = Math.random() > 0.5 ? 'Everyone' : 'Teen';
-      const genres = 'Tools';
-      
-      csv += `${app},${category},${rating},${reviews},${size},${installs},${type},${price},${contentRating},${genres}\n`;
-    }
-    return csv;
-  };
-
-  const generateWineData = (): string => {
-    let csv = 'country,description,points,price,province,region_1,region_2,variety,winery\n';
-    const countries = ['US', 'France', 'Italy', 'Spain', 'Chile'];
-    const varieties = ['Chardonnay', 'Pinot Noir', 'Cabernet Sauvignon', 'Merlot', 'Syrah'];
-    
-    for (let i = 0; i < 100; i++) {
-      const country = countries[Math.floor(Math.random() * countries.length)];
-      const description = `A fine ${varieties[Math.floor(Math.random() * varieties.length)]} wine`;
-      const points = Math.floor(Math.random() * 20) + 80;
-      const price = (Math.random() * 100 + 10).toFixed(2);
-      const province = 'California';
-      const region1 = 'Napa Valley';
-      const region2 = '';
-      const variety = varieties[Math.floor(Math.random() * varieties.length)];
-      const winery = `Winery_${i + 1}`;
-      
-      csv += `${country},"${description}",${points},${price},${province},${region1},${region2},${variety},${winery}\n`;
-    }
-    return csv;
-  };
-
-  const generateGenericData = (): string => {
-    let csv = 'feature_1,feature_2,feature_3,target\n';
-    for (let i = 0; i < 100; i++) {
-      const f1 = (Math.random() * 100).toFixed(2);
-      const f2 = (Math.random() * 100).toFixed(2);
-      const f3 = (Math.random() * 100).toFixed(2);
-      const target = (parseFloat(f1) * 0.3 + parseFloat(f2) * 0.2 + parseFloat(f3) * 0.1 + Math.random() * 10).toFixed(2);
-      csv += `${f1},${f2},${f3},${target}\n`;
-    }
-    return csv;
+  // Load more datasets
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchDatasets(searchQuery, nextPage, false);
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background transition-all duration-300">
       <Navbar />
-      <div className="container mx-auto px-6 py-16">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Dataset Gallery
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Curated collection of real datasets from Kaggle. Download and analyze real-world data for your machine learning projects.
-          </p>
-        </div>
+      
+      {/* Check if this is a dataset detail view */}
+      {isDetailURL ? (
+        // If we have dataset data, show detail view
+        dataset ? (
+          <DatasetDetailView dataset={dataset} />
+        ) : loading ? (
+          <div className="pt-24 flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <Loader2 className="inline-block animate-spin h-8 w-8 text-primary mb-4" />
+              <p className="text-muted-foreground">Loading dataset details...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="pt-24 flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold mb-4">Dataset Not Found</h1>
+              <Link href="/datasets" className="text-primary hover:underline">
+                ← Back to Datasets
+              </Link>
+            </div>
+          </div>
+        )
+      ) : (
+        // Show category/search view
+        <main className="pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-8">
+            <Link
+              href="/datasets"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Datasets
+            </Link>
+          </div>
 
-        {/* Search */}
-        <div className="max-w-2xl mx-auto mb-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search datasets, tags, or descriptions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold text-gradient mb-4">
+              {isKnownCategory(category) ? getCategoryDisplayName(category) : `Search: ${getCategoryDisplayName(category)}`} Datasets
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              {isKnownCategory(category) 
+                ? `Explore ${category === 'all' ? 'all available' : getCategoryDisplayName(category).toLowerCase()} datasets from Kaggle`
+                : `Search results for "${decodeURIComponent(category)}" from Kaggle`
+              }
+            </p>
+            {error && (
+              <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-600">
+                ⚠️ {error}
+              </div>
+            )}
+          </div>
+
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <input
+                type="text"
+                placeholder={`Search ${getCategoryDisplayName(category).toLowerCase()} datasets...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 shadow-professional glass-effect"
+              />
+            </div>
+          </div>
+
+          {/* Results count */}
+          <div className="text-center mb-8">
+            <p className="text-muted-foreground">
+              {loading && page === 1 ? (
+                'Loading datasets...'
+              ) : (
+                `Showing ${datasets.length} of ${totalCount > 0 ? totalCount : datasets.length} datasets`
+              )}
+            </p>
+          </div>
+
+          {/* Loading state */}
+          {loading && page === 1 && (
+            <div className="text-center py-12">
+              <Loader2 className="inline-block animate-spin h-8 w-8 text-primary mb-2" />
+              <p className="text-muted-foreground">Loading datasets from Kaggle...</p>
+            </div>
+          )}
+
+          {/* Datasets Grid */}
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {datasets.length > 0 ? (
+              datasets.map((dataset, index) => (
+                <div
+                  key={`${dataset.id}-${index}`}
+                  className="group relative overflow-hidden rounded-2xl border border-border bg-card glass-effect shadow-professional transition-all duration-300 hover:shadow-lg hover:scale-[1.02] animate-fadeIn"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Featured badge */}
+                  {dataset.isFeatured && (
+                    <div className="absolute top-3 right-3 z-10 bg-gradient-main text-white text-xs px-2 py-1 rounded-full">
+                      ⭐ Featured
+                    </div>
+                  )}
+
+                  {/* Dataset Card Content */}
+                  <div className="p-6">
+                    {/* Domain and Task Type */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-3 py-1 text-sm font-medium capitalize border border-primary/20">
+                        {dataset.domain.replace('-', ' ')}
+                      </span>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        📊 {dataset.taskType}
+                      </div>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-xl font-bold leading-tight text-foreground group-hover:text-gradient transition-all duration-300 mb-2 line-clamp-2">
+                      {dataset.title}
+                    </h3>
+                    
+                    {/* Owner */}
+                    <p className="text-sm text-muted-foreground mb-2">
+                      by <span className="font-medium">{dataset.owner}</span>
+                    </p>
+                    
+                    {/* Description */}
+                    <p className="text-muted-foreground line-clamp-3 leading-relaxed mb-4 text-sm">
+                      {dataset.description || 'No description available'}
+                    </p>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {dataset.tags.slice(0, 3).map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className="text-xs bg-muted/50 text-muted-foreground px-2 py-1 rounded-md"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {dataset.tags.length > 3 && (
+                        <span className="text-xs text-muted-foreground px-2 py-1">
+                          +{dataset.tags.length - 3} more
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-3 gap-4 p-3 bg-muted/50 rounded-xl mb-4">
+                      <div className="text-center">
+                        <div className="font-bold text-foreground text-sm">{dataset.downloads}</div>
+                        <div className="text-xs text-muted-foreground">Downloads</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold text-foreground text-sm">{dataset.rating.toFixed(1)}</div>
+                        <div className="text-xs text-muted-foreground">Rating</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold text-foreground text-sm">{dataset.size}</div>
+                        <div className="text-xs text-muted-foreground">Size</div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3">
+                      <Link
+                        href={`/datasets/${dataset.id}`}
+                        className="inline-flex flex-1 items-center justify-center rounded-xl bg-card border border-border text-foreground hover:bg-accent px-4 py-2.5 text-sm font-medium transition-all duration-300"
+                      >
+                        View Details
+                      </Link>
+                      <a
+                        href={`https://www.kaggle.com/datasets/${dataset.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-xl bg-gradient-main text-white px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:shadow-lg btn-theme"
+                        title="View on Kaggle"
+                      >
+                        <span>↗</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : !loading ? (
+              <div className="col-span-full text-center py-16">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">No datasets found</h3>
+                <p className="text-muted-foreground mb-4">
+                  Try adjusting your search terms or browse other categories.
+                </p>
+                <Link
+                  href="/datasets"
+                  className="inline-flex items-center rounded-xl bg-gradient-main text-white px-4 py-2 text-sm font-medium transition-all duration-300 hover:shadow-lg btn-theme"
+                >
+                  Browse All Datasets
+                </Link>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Load More Button */}
+          {hasMore && datasets.length > 0 && (
+            <div className="text-center mt-12">
+              <button
+                onClick={loadMore}
+                disabled={loading}
+                className="inline-flex items-center justify-center rounded-xl bg-card text-foreground border border-border hover:bg-accent px-6 py-3 text-sm font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="inline-block animate-spin h-4 w-4 mr-2" />
+                    Loading more...
+                  </>
+                ) : (
+                  <>
+                    Load More Datasets
+                    <span className="ml-2">↓</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Call to Action */}
+          <div className="text-center mt-16 p-8 bg-gradient-card glass-effect rounded-2xl border border-border shadow-professional">
+            <h2 className="text-2xl font-bold mb-4 text-gradient">Start Building with Real Data</h2>
+            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+              Found a dataset that interests you? View the details page or head to Kaggle to download it and start building 
+              your machine learning models with our automated pipeline.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center rounded-xl bg-gradient-main text-white px-6 py-3 text-sm font-semibold transition-all duration-300 hover:shadow-lg btn-theme"
+              >
+                🚀 Start Building
+              </Link>
+              <Link
+                href="/datasets"
+                className="inline-flex items-center justify-center rounded-xl border border-border bg-card text-foreground hover:bg-accent px-6 py-3 text-sm font-medium transition-all duration-300"
+              >
+                📚 Browse All Categories
+              </Link>
+            </div>
           </div>
         </div>
-
-        {/* Domain Filters */}
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
-          {domains.map((domain) => (
-            <button
-              key={domain.value}
-              onClick={() => setSelectedDomain(domain.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                selectedDomain === domain.value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
-            >
-              <span>{domain.emoji}</span>
-              {domain.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Datasets Grid */}
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {filteredDatasets.map((dataset) => (
-            <div
-              key={dataset.id}
-              className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
-            >
-              {isDownloading[dataset.id] && (
-                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <CloudDownload className="w-8 h-8 mx-auto mb-2 animate-bounce" />
-                    <p className="text-sm font-medium">Downloading...</p>
-                  </div>
-                </div>
-              )}
-              
-              <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary capitalize">
-                    {dataset.domain}
-                  </span>
-                  <span className={`text-xs font-medium px-2 py-1 rounded ${
-                    dataset.difficulty === 'beginner' ? 'bg-green-100 text-green-800' :
-                    dataset.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {dataset.difficulty}
-                  </span>
-                </div>
-
-                <h3 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors">
-                  {dataset.title}
-                </h3>
-                
-                <p className="text-muted-foreground line-clamp-3">
-                  {dataset.description}
-                </p>
-
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1 text-yellow-500">
-                    <Star className="w-4 h-4 fill-current" />
-                    <span className="text-foreground font-medium">{dataset.rating}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Download className="w-4 h-4" />
-                    <span>{dataset.downloads}</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {dataset.tags.slice(0, 3).map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center rounded-md bg-secondary/50 px-2 py-1 text-xs font-medium"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() => handleDownload(dataset)}
-                    disabled={isDownloading[dataset.id]}
-                    className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download
-                  </button>
-                  
-                  <a
-                    href={`/datasets/${dataset.id.replace('/', '-')}`}
-                    className="flex items-center justify-center gap-2 border border-border bg-background px-3 py-2 rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+        </main>
+      )}
+      
       <AutoMLFooter />
     </div>
   );
