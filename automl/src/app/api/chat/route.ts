@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     // Test API key validity with a simple request first
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
+      model: process.env.GOOGLE_AI_MODEL || 'gemini-2.5-pro',
       generationConfig: {
         temperature: 0.7,
         topK: 40,
@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
 
     // If no conversation history, start fresh
     if (conversationHistory.length === 0) {
-      const result = await model.generateContent(`${systemPrompt}\n\nUser: ${message}`);
+      const fullPrompt = `${systemPrompt}\n\nUser: ${message}`;
+      const result = await model.generateContent(fullPrompt);
       const response = await result.response;
       const text = response.text();
       

@@ -1,27 +1,6 @@
 // src/app/api/datasets/kaggle/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-// Flexible interface for Kaggle API response
-interface KaggleApiResponse {
-  [key: string]: unknown;
-  title?: string;
-  description?: string;
-  subtitle?: string;
-  ownerUser?: string;
-  creatorName?: string;
-  creatorDisplayName?: string;
-  downloadCount?: number;
-  usabilityRating?: number;
-  voteCount?: number;
-  totalVotes?: number;
-  tags?: Array<string | { name?: string; nameNullable?: string; ref?: string; [key: string]: unknown }>;
-  totalBytes?: number;
-  lastUpdated?: string;
-  isFeatured?: boolean;
-  fileCount?: number;
-  datasetId?: string;
-}
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -68,14 +47,15 @@ export async function GET(request: NextRequest) {
     console.log('Kaggle API response sample:', JSON.stringify(data.slice(0, 1), null, 2));
     
     // Transform Kaggle data to our format
-    const transformedDatasets = data.map((dataset: any) => {
+    const transformedDatasets = data.map((dataset: Record<string, unknown>) => {
       // Handle complex tag objects from real Kaggle API
       let transformedTags: string[] = [];
       if (Array.isArray(dataset.tags)) {
-        transformedTags = dataset.tags.map((tag: any) => {
+        transformedTags = dataset.tags.map((tag: unknown) => {
           if (typeof tag === 'string') return tag;
           if (typeof tag === 'object' && tag !== null) {
-            return tag.name || tag.nameNullable || tag.ref || 'unknown';
+            const tagObj = tag as Record<string, unknown>;
+            return (tagObj.name as string) || (tagObj.nameNullable as string) || (tagObj.ref as string) || 'unknown';
           }
           return 'unknown';
         }).filter((tag: string) => tag && tag !== 'unknown').slice(0, 5); // Limit to 5 tags
