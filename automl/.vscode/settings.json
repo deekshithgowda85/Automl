@@ -1,3 +1,10 @@
 {
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": true,
+        "markdown": true,
+        "scminput": false
+    },
+    "github.copilot.editor.enableAutoCompletions": true,
     "github.copilot.advanced": {}
 }
