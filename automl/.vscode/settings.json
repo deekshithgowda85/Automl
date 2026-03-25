@@ -6,6 +6,5 @@
         "scminput": false
     },
     "github.copilot.editor.enableAutoCompletions": true,
-    "github.copilot.chat.enabled": true,
     "github.copilot.advanced": {}
 }
